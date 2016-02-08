@@ -1,0 +1,2 @@
+# blooto
+Chess composition solver

@@ -26,3 +26,10 @@
 *.exe
 *.out
 *.app
+
+# Build directories
+/obj.*
+/build*
+
+# KDevelop internal state
+/.kdev4

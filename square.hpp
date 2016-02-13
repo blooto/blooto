@@ -17,6 +17,7 @@
 #define _BLOOTO_SQUARE_HPP
 
 #include <cstdint>
+#include <ostream>
 
 namespace blooto {
 
@@ -33,6 +34,22 @@ namespace blooto {
         A7, B7, C7, D7, E7, F7, G7, H7,
         A8, B8, C8, D8, E8, F8, G8, H8
     };
+
+    template<typename CharT, typename CharTraits>
+    std::basic_ostream<CharT, CharTraits> &
+    operator<<(std::basic_ostream<CharT, CharTraits> &out, Square sq)
+    {
+        static const CharT ranks[8] = {
+            CharT{'1'}, CharT{'2'}, CharT{'3'}, CharT{'4'},
+            CharT{'5'}, CharT{'6'}, CharT{'7'}, CharT{'8'}
+        };
+        static const CharT files[8] = {
+            CharT{'a'}, CharT{'b'}, CharT{'c'}, CharT{'d'},
+            CharT{'e'}, CharT{'f'}, CharT{'g'}, CharT{'h'}
+        };
+        unsigned d = static_cast<unsigned>(sq);
+        return out << files[d & 7] << ranks[(d >> 3) & 7];
+    }
 
 }
 

@@ -120,7 +120,6 @@ namespace blooto {
 
             //! First square among remaining ones
             //! @author Kim Walisch (2012)
-            //! @precondition bb != 0
             //! @return index (0..63) of least significant one bit
             constexpr Square operator*() const {
                 return index64[((data_ ^ (data_-1)) * debruijn64) >> 58];
@@ -194,7 +193,7 @@ namespace blooto {
     }
 
     //! Make inverted BitBoard
-    //! @param lhs original BitBoard
+    //! @param bb original BitBoard
     //! @return BitBoard with all bits inverted
     //!
     //! This means that new BitBoard will contain only those squares

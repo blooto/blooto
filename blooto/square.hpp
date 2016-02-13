@@ -35,6 +35,10 @@ namespace blooto {
         A8, B8, C8, D8, E8, F8, G8, H8
     };
 
+    //! Output square's name to output stream
+    //! @param out output stream
+    //! @param sq square
+    //! @return reference to output stream for operator chaining
     template<typename CharT, typename CharTraits>
     std::basic_ostream<CharT, CharTraits> &
     operator<<(std::basic_ostream<CharT, CharTraits> &out, Square sq)

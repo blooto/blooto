@@ -1,7 +1,7 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 
-#include "square.hpp"
+#include <blooto/square.hpp>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE test_square

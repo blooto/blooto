@@ -1,6 +1,6 @@
 #include <initializer_list>
 
-#include "bitboard.hpp"
+#include <blooto/bitboard.hpp>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE test_bitboard

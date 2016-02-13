@@ -1,0 +1,2 @@
+//! @namespace blooto
+//! @brief The main blooto namespace.

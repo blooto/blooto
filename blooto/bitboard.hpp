@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <iterator>
 
-#include "square.hpp"
+#include <blooto/square.hpp>
 
 namespace blooto {
 

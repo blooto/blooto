@@ -20,6 +20,7 @@
 #include <iterator>
 
 #include <blooto/square.hpp>
+#include <blooto/bitscan.hpp>
 
 namespace blooto {
 
@@ -89,27 +90,6 @@ namespace blooto {
         {
             data_type data_;
 
-            constexpr static const Square index64[64] = {
-                Square::A1, Square::H6, Square::B1, Square::A8,
-                Square::A7, Square::D4, Square::C1, Square::E8,
-                Square::B8, Square::B7, Square::B6, Square::F5,
-                Square::E4, Square::A3, Square::D1, Square::F8,
-                Square::G7, Square::C8, Square::D5, Square::E7,
-                Square::C7, Square::C6, Square::F3, Square::E6,
-                Square::G5, Square::A5, Square::F4, Square::H3,
-                Square::B3, Square::D2, Square::E1, Square::G8,
-                Square::G6, Square::H7, Square::C4, Square::D8,
-                Square::A6, Square::E5, Square::H2, Square::F7,
-                Square::C5, Square::D7, Square::E3, Square::D6,
-                Square::H4, Square::G3, Square::C2, Square::F6,
-                Square::B4, Square::H5, Square::G2, Square::B5,
-                Square::D3, Square::G4, Square::B2, Square::A4,
-                Square::F2, Square::C3, Square::A2, Square::E2,
-                Square::H1, Square::G1, Square::F1, Square::H8
-            };
-
-            constexpr static const data_type debruijn64 = 0x03f79d71b4cb0a89ULL;
-
         public:
 
             //! Construct empty iterator with no more squares left.
@@ -119,10 +99,9 @@ namespace blooto {
             constexpr explicit iterator(BitBoard bb): data_(bb.data()) {}
 
             //! First square among remaining ones
-            //! @author Kim Walisch (2012)
-            //! @return index (0..63) of least significant one bit
+            //! @return first remaining square
             constexpr Square operator*() const {
-                return index64[((data_ ^ (data_-1)) * debruijn64) >> 58];
+                return Square(BitScan::ls1b(data_));
             }
 
             //! Move iterator forward (remove first square)
@@ -233,7 +212,6 @@ namespace blooto {
         return ~BitBoard(sq);
     }
 
-    constexpr const Square BitBoard::iterator::index64[];
 }
 
 #endif

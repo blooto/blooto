@@ -169,6 +169,22 @@ namespace blooto {
 
     };
 
+    //! Comparison for equality operator for bitboards
+    //! @param lhs one BitBoard
+    //! @param rhs another BitBoard
+    //! @return true is both bitboard contain exactly the same squares
+    constexpr bool operator==(BitBoard lhs, BitBoard rhs) {
+        return lhs.data() == rhs.data();
+    }
+
+    //! Comparison for inequality operator for bitboards
+    //! @param lhs one BitBoard
+    //! @param rhs another BitBoard
+    //! @return false is both bitboard contain exactly the same squares
+    constexpr bool operator!=(BitBoard lhs, BitBoard rhs) {
+        return lhs.data() != rhs.data();
+    }
+
     //! Make BitBoard united with another one
     //! @param lhs one BitBoard
     //! @param rhs another BitBoard

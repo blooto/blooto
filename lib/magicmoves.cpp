@@ -59,7 +59,7 @@ const unsigned int magicmoves_r_shift[64] = {
     53, 54, 54, 53, 53, 53, 53, 53
 };
 
-const U64 magicmoves_r_magics[64] = {
+const std::uint64_t magicmoves_r_magics[64] = {
     C64(0x0080001020400080), C64(0x0040001000200040),
     C64(0x0080081000200080), C64(0x0080040800100080),
     C64(0x0080020400080080), C64(0x0080010200040080),
@@ -94,7 +94,7 @@ const U64 magicmoves_r_magics[64] = {
     C64(0x0001000082000401), C64(0x0001FFFAABFAD1A2)
 };
 
-const U64 magicmoves_r_mask[64] = {
+const std::uint64_t magicmoves_r_mask[64] = {
     C64(0x000101010101017E), C64(0x000202020202027C),
     C64(0x000404040404047A), C64(0x0008080808080876),
     C64(0x001010101010106E), C64(0x002020202020205E),
@@ -141,7 +141,7 @@ const unsigned int magicmoves_b_shift[64] = {
     58, 59, 59, 59, 59, 59, 59, 58
 };
 
-const U64 magicmoves_b_magics[64] = {
+const std::uint64_t magicmoves_b_magics[64] = {
     C64(0x0002020202020200), C64(0x0002020202020000),
     C64(0x0004010202000000), C64(0x0004040080000000),
     C64(0x0001104000000000), C64(0x0000821040000000),
@@ -176,7 +176,7 @@ const U64 magicmoves_b_magics[64] = {
     C64(0x0000040404040400), C64(0x0002020202020200)
 };
 
-const U64 magicmoves_b_mask[64] = {
+const std::uint64_t magicmoves_b_mask[64] = {
     C64(0x0040201008040200), C64(0x0000402010080400),
     C64(0x0000004020100A00), C64(0x0000000040221400),
     C64(0x0000000002442800), C64(0x0000000204085000),
@@ -213,9 +213,9 @@ const U64 magicmoves_b_mask[64] = {
 
 #ifdef MINIMIZE_MAGIC
 
-U64 magicmovesbdb[5248];
+std::uint64_t magicmovesbdb[5248];
 
-const U64* magicmoves_b_indices[64] = {
+const std::uint64_t* magicmoves_b_indices[64] = {
     magicmovesbdb+4992, magicmovesbdb+2624,
     magicmovesbdb+256,  magicmovesbdb+896,
     magicmovesbdb+1280, magicmovesbdb+1664,
@@ -253,9 +253,9 @@ const U64* magicmoves_b_indices[64] = {
 #else
 
 #ifndef PERFECT_MAGIC_HASH
-U64 magicmovesbdb[64][1<<9];
+std::uint64_t magicmovesbdb[64][1<<9];
 #else
-U64 magicmovesbdb[1428];
+std::uint64_t magicmovesbdb[1428];
 PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
 #endif
 
@@ -263,9 +263,9 @@ PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
 
 #ifdef MINIMIZE_MAGIC
 
-U64 magicmovesrdb[102400];
+std::uint64_t magicmovesrdb[102400];
 
-const U64* magicmoves_r_indices[64] = {
+const std::uint64_t* magicmoves_r_indices[64] = {
     magicmovesrdb+86016, magicmovesrdb+73728,
     magicmovesrdb+36864, magicmovesrdb+43008,
     magicmovesrdb+47104, magicmovesrdb+51200,
@@ -303,46 +303,46 @@ const U64* magicmoves_r_indices[64] = {
 #else
 
 #ifndef PERFECT_MAGIC_HASH
-U64 magicmovesrdb[64][1<<12];
+std::uint64_t magicmovesrdb[64][1<<12];
 #else
-U64 magicmovesrdb[4900];
+std::uint64_t magicmovesrdb[4900];
 PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
 #endif
 
 #endif
 
-U64 initmagicmoves_occ(const int* squares,
+std::uint64_t initmagicmoves_occ(const int* squares,
                        const int numSquares,
-                       const U64 linocc)
+                       const std::uint64_t linocc)
 {
     int i;
-    U64 ret=0;
+    std::uint64_t ret=0;
     for (i = 0; i < numSquares; i++) {
-        if (linocc & (((U64)(1)) << i))
-            ret |= (((U64)(1)) << squares[i]);
+        if (linocc & (((std::uint64_t)(1)) << i))
+            ret |= (((std::uint64_t)(1)) << squares[i]);
     }
     return ret;
 }
 
-U64 initmagicmoves_Rmoves(const int square, const U64 occ)
+std::uint64_t initmagicmoves_Rmoves(const int square, const std::uint64_t occ)
 {
-    U64 ret=0;
-    U64 bit;
-    U64 rowbits = (((U64)0xFF) << (8 * (square / 8)));
+    std::uint64_t ret=0;
+    std::uint64_t bit;
+    std::uint64_t rowbits = (((std::uint64_t)0xFF) << (8 * (square / 8)));
 
-    bit = (((U64)(1)) << square);
+    bit = (((std::uint64_t)(1)) << square);
     do {
         bit <<= 8;
         ret |= bit;
     } while(bit && !(bit & occ));
 
-    bit = (((U64)(1)) << square);
+    bit = (((std::uint64_t)(1)) << square);
     do {
         bit >>= 8;
         ret |= bit;
     } while (bit && !(bit & occ));
 
-    bit = (((U64)(1)) << square);
+    bit = (((std::uint64_t)(1)) << square);
     do {
         bit <<= 1;
         if(bit & rowbits)
@@ -351,7 +351,7 @@ U64 initmagicmoves_Rmoves(const int square, const U64 occ)
             break;
     } while (!(bit & occ));
 
-    bit=(((U64)(1)) << square);
+    bit=(((std::uint64_t)(1)) << square);
     do {
         bit >>= 1;
         if (bit & rowbits)
@@ -363,14 +363,14 @@ U64 initmagicmoves_Rmoves(const int square, const U64 occ)
     return ret;
 }
 
-U64 initmagicmoves_Bmoves(const int square, const U64 occ)
+std::uint64_t initmagicmoves_Bmoves(const int square, const std::uint64_t occ)
 {
-    U64 ret = 0;
-    U64 bit;
-    U64 bit2;
-    U64 rowbits = (((U64)0xFF) << (8 * (square / 8)));
+    std::uint64_t ret = 0;
+    std::uint64_t bit;
+    std::uint64_t bit2;
+    std::uint64_t rowbits = (((std::uint64_t)0xFF) << (8 * (square / 8)));
 
-    bit = (((U64)(1)) << square);
+    bit = (((std::uint64_t)(1)) << square);
     bit2 = bit;
     do {
         bit <<= 8 - 1;
@@ -381,7 +381,7 @@ U64 initmagicmoves_Bmoves(const int square, const U64 occ)
             break;
     } while (bit && !(bit & occ));
 
-    bit=(((U64)(1)) << square);
+    bit=(((std::uint64_t)(1)) << square);
     bit2 = bit;
     do {
         bit <<= 8 + 1;
@@ -392,7 +392,7 @@ U64 initmagicmoves_Bmoves(const int square, const U64 occ)
             break;
     } while (bit && !(bit & occ));
 
-    bit = (((U64)(1)) << square);
+    bit = (((std::uint64_t)(1)) << square);
     bit2 = bit;
     do {
         bit >>= 8 - 1;
@@ -403,7 +403,7 @@ U64 initmagicmoves_Bmoves(const int square, const U64 occ)
             break;
     } while (bit && !(bit & occ));
 
-    bit = (((U64)(1)) << square);
+    bit = (((std::uint64_t)(1)) << square);
     bit2 = bit;
     do {
         bit >>= 8 + 1;
@@ -466,7 +466,7 @@ void initmagicmoves()
 #ifdef MINIMIZE_MAGIC
 
     //identical to magicmove_x_indices except without the const modifer
-    U64* magicmoves_b_indices2[64] = {
+    std::uint64_t* magicmoves_b_indices2[64] = {
         magicmovesbdb+4992, magicmovesbdb+2624,
         magicmovesbdb+256,  magicmovesbdb+896,
         magicmovesbdb+1280, magicmovesbdb+1664,
@@ -501,7 +501,7 @@ void initmagicmoves()
         magicmovesbdb+4896, magicmovesbdb+5184
     };
 
-    U64* magicmoves_r_indices2[64] = {
+    std::uint64_t* magicmoves_r_indices2[64] = {
         magicmovesrdb+86016, magicmovesrdb+73728,
         magicmovesrdb+36864, magicmovesrdb+43008,
         magicmovesrdb+47104, magicmovesrdb+51200,
@@ -548,22 +548,24 @@ void initmagicmoves()
     for (i = 0; i < 64; i++) {
         int squares[64];
         int numsquares=0;
-        U64 temp = magicmoves_b_mask[i];
+        std::uint64_t temp = magicmoves_b_mask[i];
         while(temp) {
-            U64 bit=temp&-temp;
+            std::uint64_t bit=temp&-temp;
             squares[numsquares++] =
                 initmagicmoves_bitpos64_database[(bit *
                                                   C64(0x07EDD5E59A4E28C2)) >>
                                                  58];
             temp ^= bit;
         }
-        for (temp = 0; temp < (((U64)(1)) << numsquares); temp++) {
-            U64 tempocc = initmagicmoves_occ(squares, numsquares, temp);
+        for (temp = 0; temp < (((std::uint64_t)(1)) << numsquares); temp++) {
+            std::uint64_t tempocc = initmagicmoves_occ(squares,
+                                                       numsquares,
+                                                       temp);
 #ifndef PERFECT_MAGIC_HASH
             BmagicNOMASK2(i, tempocc) = initmagicmoves_Bmoves(i, tempocc);
 #else
-            U64 moves=initmagicmoves_Bmoves(i, tempocc);
-            U64 index =
+            std::uint64_t moves=initmagicmoves_Bmoves(i, tempocc);
+            std::uint64_t index =
                 (((tempocc)*magicmoves_b_magics[i]) >> MINIMAL_B_BITS_SHIFT);
             int j;
             for (j = 0; j < 1428; j++) {
@@ -582,22 +584,24 @@ void initmagicmoves()
     for (i = 0; i < 64; i++) {
         int squares[64];
         int numsquares = 0;
-        U64 temp = magicmoves_r_mask[i];
+        std::uint64_t temp = magicmoves_r_mask[i];
         while(temp) {
-            U64 bit = temp & -temp;
+            std::uint64_t bit = temp & -temp;
             squares[numsquares++] =
                 initmagicmoves_bitpos64_database[(bit *
                                                   C64(0x07EDD5E59A4E28C2)) >>
                                                  58];
                 temp ^= bit;
         }
-        for (temp = 0; temp < (((U64)(1)) << numsquares); temp++) {
-            U64 tempocc = initmagicmoves_occ(squares, numsquares, temp);
+        for (temp = 0; temp < (((std::uint64_t)(1)) << numsquares); temp++) {
+            std::uint64_t tempocc = initmagicmoves_occ(squares,
+                                                       numsquares,
+                                                       temp);
 #ifndef PERFECT_MAGIC_HASH
             RmagicNOMASK2(i, tempocc) = initmagicmoves_Rmoves(i, tempocc);
 #else
-            U64 moves=initmagicmoves_Rmoves(i,tempocc);
-            U64 index =
+            std::uint64_t moves=initmagicmoves_Rmoves(i,tempocc);
+            std::uint64_t index =
                 (((tempocc) * magicmoves_r_magics[i]) >> MINIMAL_R_BITS_SHIFT);
             int j;
             for (j = 0; j < 4900; j++) {

@@ -37,10 +37,6 @@
  *BmagicNOMASK(square, occupancy)
  *RmagicNOMASK(square, occupancy)
  *
- *Unsigned 64 bit integers are referenced by this generator as U64.
- *Edit the beginning lines of this header for the defenition of a 64 bit
- *integer if necessary.
- *
  *If MINIMIZE_MAGIC is defined before including this file:
  *The move bitboard generator will use up 841kb of memory.
  *41kb of memory is used for the bishop database and 800kb is used for the rook
@@ -74,6 +70,8 @@
 #ifndef _BLOOTO_MAGICMOVES_HPP
 #define _BLOOTO_MAGICMOVES_HPP
 
+#include <cstdint>
+
 /*********MODIFY THE FOLLOWING IF NECESSARY********/
 //the default configuration is the best
 
@@ -85,16 +83,6 @@
 //it uses variable shift for each square
 //#define VARIABLE_SHIFT
 
-#ifndef __64_BIT_INTEGER_DEFINED__
-#define __64_BIT_INTEGER_DEFINED__
-#if defined(_MSC_VER) && _MSC_VER<1300
-typedef unsigned __int64 U64; //For the old microsoft compilers
-#else
-typedef unsigned long long  U64; //Supported by MSC 13.00+ and C99
-#endif //defined(_MSC_VER) && _MSC_VER<1300
-#endif //__64_BIT_INTEGER_DEFINED__
-/***********MODIFY THE ABOVE IF NECESSARY**********/
-
 #ifndef C64
 #if (!defined(_MSC_VER) || _MSC_VER>1300)
 #define C64(constantU64) constantU64##ULL
@@ -103,10 +91,10 @@ typedef unsigned long long  U64; //Supported by MSC 13.00+ and C99
 #endif
 #endif
 
-extern const U64 magicmoves_r_magics[64];
-extern const U64 magicmoves_r_mask[64];
-extern const U64 magicmoves_b_magics[64];
-extern const U64 magicmoves_b_mask[64];
+extern const std::uint64_t magicmoves_r_magics[64];
+extern const std::uint64_t magicmoves_r_mask[64];
+extern const std::uint64_t magicmoves_b_magics[64];
+extern const std::uint64_t magicmoves_b_mask[64];
 extern const unsigned int magicmoves_b_shift[64];
 extern const unsigned int magicmoves_r_shift[64];
 
@@ -121,16 +109,16 @@ extern const unsigned int magicmoves_r_shift[64];
 #ifndef PERFECT_MAGIC_HASH
 #ifdef MINIMIZE_MAGIC
 
-//extern U64 magicmovesbdb[5248];
-extern const U64* magicmoves_b_indices[64];
+//extern std::uint64_t magicmovesbdb[5248];
+extern const std::uint64_t* magicmoves_b_indices[64];
 
-//extern U64 magicmovesrdb[102400];
-extern const U64* magicmoves_r_indices[64];
+//extern std::uint64_t magicmovesrdb[102400];
+extern const std::uint64_t* magicmoves_r_indices[64];
 
 #else //Don't Minimize database size
 
-extern U64 magicmovesbdb[64][1<<9];
-extern U64 magicmovesrdb[64][1<<12];
+extern std::uint64_t magicmovesbdb[64][1<<9];
+extern std::uint64_t magicmovesrdb[64][1<<12];
 
 #endif //MINIMIAZE_MAGICMOVES
 
@@ -138,8 +126,8 @@ extern U64 magicmovesrdb[64][1<<12];
 
 #ifndef MINIMIZE_MAGIC
 
-extern U64 magicmovesbdb[1428];
-extern U64 magicmovesrdb[4900];
+extern std::uint64_t magicmovesbdb[1428];
+extern std::uint64_t magicmovesrdb[4900];
 extern PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
 extern PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
 
@@ -152,7 +140,8 @@ extern PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
 
 #endif //PERFCT_MAGIC_HASH
 
-inline U64 Bmagic(const unsigned int square, const U64 occupancy)
+inline std::uint64_t Bmagic(const unsigned int square,
+                            const std::uint64_t occupancy)
 {
 #ifndef PERFECT_MAGIC_HASH
 
@@ -180,7 +169,8 @@ inline U64 Bmagic(const unsigned int square, const U64 occupancy)
 #endif
 }
 
-inline U64 Rmagic(const unsigned int square, const U64 occupancy)
+inline std::uint64_t Rmagic(const unsigned int square,
+                            const std::uint64_t occupancy)
 {
 #ifndef PERFECT_MAGIC_HASH
 
@@ -209,7 +199,8 @@ inline U64 Rmagic(const unsigned int square, const U64 occupancy)
 #endif
 }
 
-inline U64 BmagicNOMASK(const unsigned int square, const U64 occupancy)
+inline std::uint64_t BmagicNOMASK(const unsigned int square,
+                                  const std::uint64_t occupancy)
 {
 #ifndef PERFECT_MAGIC_HASH
 
@@ -234,7 +225,8 @@ inline U64 BmagicNOMASK(const unsigned int square, const U64 occupancy)
 #endif
 }
 
-inline U64 RmagicNOMASK(const unsigned int square, const U64 occupancy)
+inline std::uint64_t RmagicNOMASK(const unsigned int square,
+                                  const std::uint64_t occupancy)
 {
 #ifndef PERFECT_MAGIC_HASH
 
@@ -260,12 +252,14 @@ inline U64 RmagicNOMASK(const unsigned int square, const U64 occupancy)
 #endif
 }
 
-inline U64 Qmagic(const unsigned int square, const U64 occupancy)
+inline std::uint64_t Qmagic(const unsigned int square,
+                            const std::uint64_t occupancy)
 {
     return Bmagic(square, occupancy) | Rmagic(square, occupancy);
 }
 
-inline U64 QmagicNOMASK(const unsigned int square, const U64 occupancy)
+inline std::uint64_t QmagicNOMASK(const unsigned int square,
+                                  const std::uint64_t occupancy)
 {
     return BmagicNOMASK(square, occupancy) | RmagicNOMASK(square, occupancy);
 }

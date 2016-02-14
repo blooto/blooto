@@ -58,6 +58,16 @@ namespace blooto {
         //! @param other another BitBoard
         BitBoard(BitBoard &&other) = default;
 
+        //! Assignment operator
+        //! @param other another BitBoard
+        //! @return reference to BitBoard assigned to
+        BitBoard &operator=(const BitBoard &other) = default;
+
+        //! Assignment operator
+        //! @param other another BitBoard
+        //! @return reference to BitBoard assigned to
+        BitBoard &operator=(BitBoard &&other) = default;
+
         //! Raw 64-bit data from BitBoard.
         //! @return raw 64-bit data
         constexpr data_type data() const {return data_;}

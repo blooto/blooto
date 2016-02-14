@@ -40,13 +40,13 @@
  *If MINIMIZE_MAGIC is defined before including this file:
  *The move bitboard generator will use up 841kb of memory.
  *41kb of memory is used for the bishop database and 800kb is used for the rook
- *database.  If you feel the 800kb rook database is too big, then comment it out
- *and use a more traditional move bitboard generator in conjunction with the
- *magic move bitboard generator for bishops.
+ *database.  If you feel the 800kb rook database is too big, then comment it
+ *out and use a more traditional move bitboard generator in conjunction with
+ *the magic move bitboard generator for bishops.
  *
  *If MINIMIAZE_MAGIC is not defined before including this file:
- *The move bitboard generator will use up 2304kb of memory but might perform a bit
- *faster.
+ *The move bitboard generator will use up 2304kb of memory but might perform
+ * a bit faster.
  *
  *Copyright (C) 2007 Pradyumna Kannan.
  *

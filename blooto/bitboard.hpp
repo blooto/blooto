@@ -160,6 +160,10 @@ namespace blooto {
             return iterator();
         }
 
+        //! Check BitBoard for emptiness
+        //! @return true if bitboard contains no squares
+        constexpr bool empty() const {return data_ == 0ULL;}
+
     private:
         data_type data_;
 

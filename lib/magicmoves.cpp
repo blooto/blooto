@@ -311,9 +311,9 @@ PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
 
 #endif
 
-std::uint64_t initmagicmoves_occ(const int* squares,
-                       const int numSquares,
-                       const std::uint64_t linocc)
+static std::uint64_t initmagicmoves_occ(const int* squares,
+                                        const int numSquares,
+                                        const std::uint64_t linocc)
 {
     int i;
     std::uint64_t ret=0;
@@ -324,7 +324,8 @@ std::uint64_t initmagicmoves_occ(const int* squares,
     return ret;
 }
 
-std::uint64_t initmagicmoves_Rmoves(const int square, const std::uint64_t occ)
+static std::uint64_t initmagicmoves_Rmoves(const int square,
+                                           const std::uint64_t occ)
 {
     std::uint64_t ret=0;
     std::uint64_t bit;
@@ -363,7 +364,8 @@ std::uint64_t initmagicmoves_Rmoves(const int square, const std::uint64_t occ)
     return ret;
 }
 
-std::uint64_t initmagicmoves_Bmoves(const int square, const std::uint64_t occ)
+static std::uint64_t initmagicmoves_Bmoves(const int square,
+                                           const std::uint64_t occ)
 {
     std::uint64_t ret = 0;
     std::uint64_t bit;

@@ -71,8 +71,8 @@
  *3. This notice may not be removed or altered from any source distribution.
  */
 
-#ifndef _magicmovesh
-#define _magicmovesh
+#ifndef _BLOOTO_MAGICMOVES_HPP
+#define _BLOOTO_MAGICMOVES_HPP
 
 /*********MODIFY THE FOLLOWING IF NECESSARY********/
 //the default configuration is the best
@@ -272,4 +272,4 @@ inline U64 QmagicNOMASK(const unsigned int square, const U64 occupancy)
 
 void initmagicmoves();
 
-#endif //_magicmoveshvesh
+#endif // _BLOOTO_MAGICMOVES_HPP

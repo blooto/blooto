@@ -213,9 +213,9 @@ const std::uint64_t blooto::magicmoves_b_mask[64] = {
 
 #ifdef MINIMIZE_MAGIC
 
-static std::uint64_t magicmovesbdb[5248];
+static blooto::BitBoard magicmovesbdb[5248];
 
-const std::uint64_t *blooto::magicmoves_b_indices[64] = {
+const blooto::BitBoard *blooto::magicmoves_b_indices[64] = {
     magicmovesbdb+4992, magicmovesbdb+2624,
     magicmovesbdb+256,  magicmovesbdb+896,
     magicmovesbdb+1280, magicmovesbdb+1664,
@@ -253,19 +253,19 @@ const std::uint64_t *blooto::magicmoves_b_indices[64] = {
 #else
 
 #ifndef PERFECT_MAGIC_HASH
-std::uint64_t blooto::magicmovesbdb[64][1<<9];
+blooto::BitBoard blooto::magicmovesbdb[64][1<<9];
 #else
-std::uint64_t blooto::magicmovesbdb[1428];
-PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
+blooto::BitBoard blooto::magicmovesbdb[1428];
+PERFECT_MAGIC_HASH blooto::magicmoves_b_indices[64][1<<9];
 #endif
 
 #endif
 
 #ifdef MINIMIZE_MAGIC
 
-static std::uint64_t magicmovesrdb[102400];
+static blooto::BitBoard magicmovesrdb[102400];
 
-const std::uint64_t *blooto::magicmoves_r_indices[64] = {
+const blooto::BitBoard *blooto::magicmoves_r_indices[64] = {
     magicmovesrdb+86016, magicmovesrdb+73728,
     magicmovesrdb+36864, magicmovesrdb+43008,
     magicmovesrdb+47104, magicmovesrdb+51200,
@@ -303,9 +303,9 @@ const std::uint64_t *blooto::magicmoves_r_indices[64] = {
 #else
 
 #ifndef PERFECT_MAGIC_HASH
-std::uint64_t blooto::magicmovesrdb[64][1<<12];
+blooto::BitBoard blooto::magicmovesrdb[64][1<<12];
 #else
-std::uint64_t blooto::magicmovesrdb[4900];
+blooto::BitBoard blooto::magicmovesrdb[4900];
 PERFECT_MAGIC_HASH blooto::magicmoves_r_indices[64][1<<12];
 #endif
 
@@ -324,8 +324,8 @@ static std::uint64_t initmagicmoves_occ(const int* squares,
     return ret;
 }
 
-static std::uint64_t initmagicmoves_Rmoves(const int square,
-                                           const std::uint64_t occ)
+static blooto::BitBoard initmagicmoves_Rmoves(const int square,
+                                              const std::uint64_t occ)
 {
     std::uint64_t ret=0;
     std::uint64_t bit;
@@ -361,11 +361,11 @@ static std::uint64_t initmagicmoves_Rmoves(const int square,
             break;
     } while (!(bit & occ));
 
-    return ret;
+    return blooto::BitBoard(ret);
 }
 
-static std::uint64_t initmagicmoves_Bmoves(const int square,
-                                           const std::uint64_t occ)
+static blooto::BitBoard initmagicmoves_Bmoves(const int square,
+                                              const std::uint64_t occ)
 {
     std::uint64_t ret = 0;
     std::uint64_t bit;
@@ -416,7 +416,7 @@ static std::uint64_t initmagicmoves_Bmoves(const int square,
             break;
     } while (bit && !(bit & occ));
 
-    return ret;
+    return blooto::BitBoard(ret);
 }
 
 // used so that the original indices can be left as const
@@ -427,7 +427,7 @@ static std::uint64_t initmagicmoves_Bmoves(const int square,
 #define BmagicNOMASK2(square, occupancy) \
   *(magicmoves_b_indices2[square] + \
   (((occupancy)*magicmoves_b_magics[square]) >> magicmoves_b_shift[square]))
-  #define RmagicNOMASK2(square, occupancy) \
+#define RmagicNOMASK2(square, occupancy) \
   *(magicmoves_r_indices2[square] + \
   (((occupancy)*magicmoves_r_magics[square]) >> magicmoves_r_shift[square]))
 #else
@@ -468,7 +468,7 @@ void blooto::initmagicmoves()
 #ifdef MINIMIZE_MAGIC
 
     //identical to magicmove_x_indices except without the const modifer
-    std::uint64_t* magicmoves_b_indices2[64] = {
+    BitBoard *magicmoves_b_indices2[64] = {
         magicmovesbdb+4992, magicmovesbdb+2624,
         magicmovesbdb+256,  magicmovesbdb+896,
         magicmovesbdb+1280, magicmovesbdb+1664,
@@ -503,7 +503,7 @@ void blooto::initmagicmoves()
         magicmovesbdb+4896, magicmovesbdb+5184
     };
 
-    std::uint64_t* magicmoves_r_indices2[64] = {
+    BitBoard *magicmoves_r_indices2[64] = {
         magicmovesrdb+86016, magicmovesrdb+73728,
         magicmovesrdb+36864, magicmovesrdb+43008,
         magicmovesrdb+47104, magicmovesrdb+51200,
@@ -542,9 +542,9 @@ void blooto::initmagicmoves()
 
 #ifdef PERFECT_MAGIC_HASH
     for (i = 0; i < 1428; i++)
-        magicmovesbdb[i] = 0;
+        magicmovesbdb[i] = BitBoard{};
     for (i = 0; i < 4900; i++)
-        magicmovesrdb[i] = 0;
+        magicmovesrdb[i] = BitBoard{};
 #endif
 
     for (i = 0; i < 64; i++) {
@@ -566,12 +566,12 @@ void blooto::initmagicmoves()
 #ifndef PERFECT_MAGIC_HASH
             BmagicNOMASK2(i, tempocc) = initmagicmoves_Bmoves(i, tempocc);
 #else
-            std::uint64_t moves=initmagicmoves_Bmoves(i, tempocc);
+            BitBoard moves = initmagicmoves_Bmoves(i, tempocc);
             std::uint64_t index =
-                (((tempocc)*magicmoves_b_magics[i]) >> MINIMAL_B_BITS_SHIFT);
+                (tempocc * magicmoves_b_magics[i]) >> MINIMAL_B_BITS_SHIFT(i);
             int j;
             for (j = 0; j < 1428; j++) {
-                if (!magicmovesbdb[j]) {
+                if (magicmovesbdb[j].empty()) {
                     magicmovesbdb[j] = moves;
                     magicmoves_b_indices[i][index] = j;
                     break;
@@ -602,12 +602,12 @@ void blooto::initmagicmoves()
 #ifndef PERFECT_MAGIC_HASH
             RmagicNOMASK2(i, tempocc) = initmagicmoves_Rmoves(i, tempocc);
 #else
-            std::uint64_t moves=initmagicmoves_Rmoves(i,tempocc);
+            BitBoard moves = initmagicmoves_Rmoves(i, tempocc);
             std::uint64_t index =
-                (((tempocc) * magicmoves_r_magics[i]) >> MINIMAL_R_BITS_SHIFT);
+                (tempocc * magicmoves_r_magics[i]) >> MINIMAL_R_BITS_SHIFT(i);
             int j;
             for (j = 0; j < 4900; j++) {
-                if (!magicmovesrdb[j]) {
+                if (magicmovesrdb[j].empty()) {
                     magicmovesrdb[j] = moves;
                     magicmoves_r_indices[i][index] = j;
                     break;

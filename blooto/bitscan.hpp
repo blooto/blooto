@@ -96,7 +96,6 @@ namespace blooto {
     //! Most optimal implementation of forward bit scan.
     struct BitScan: BitScanOptimised {};
 
-    constexpr const unsigned BitScanGeneric::index64[];
 }
 
 #endif

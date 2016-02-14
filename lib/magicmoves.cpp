@@ -48,7 +48,7 @@
 //0x007FFCDDFCED714AULL - B8 10 bit
 //0x003FFFCDFFD88096ULL - C8 10 bit
 
-const unsigned int magicmoves_r_shift[64] = {
+const unsigned int blooto::magicmoves_r_shift[64] = {
     52, 53, 53, 53, 53, 53, 53, 52,
     53, 54, 54, 54, 54, 54, 54, 53,
     53, 54, 54, 54, 54, 54, 54, 53,
@@ -59,7 +59,7 @@ const unsigned int magicmoves_r_shift[64] = {
     53, 54, 54, 53, 53, 53, 53, 53
 };
 
-const std::uint64_t magicmoves_r_magics[64] = {
+const std::uint64_t blooto::magicmoves_r_magics[64] = {
     0x0080001020400080ULL, 0x0040001000200040ULL,
     0x0080081000200080ULL, 0x0080040800100080ULL,
     0x0080020400080080ULL, 0x0080010200040080ULL,
@@ -94,7 +94,7 @@ const std::uint64_t magicmoves_r_magics[64] = {
     0x0001000082000401ULL, 0x0001FFFAABFAD1A2ULL
 };
 
-const std::uint64_t magicmoves_r_mask[64] = {
+const std::uint64_t blooto::magicmoves_r_mask[64] = {
     0x000101010101017EULL, 0x000202020202027CULL,
     0x000404040404047AULL, 0x0008080808080876ULL,
     0x001010101010106EULL, 0x002020202020205EULL,
@@ -130,7 +130,7 @@ const std::uint64_t magicmoves_r_mask[64] = {
 };
 
 //my original tables for bishops
-const unsigned int magicmoves_b_shift[64] = {
+const unsigned int blooto::magicmoves_b_shift[64] = {
     58, 59, 59, 59, 59, 59, 59, 58,
     59, 59, 59, 59, 59, 59, 59, 59,
     59, 59, 57, 57, 57, 57, 59, 59,
@@ -141,7 +141,7 @@ const unsigned int magicmoves_b_shift[64] = {
     58, 59, 59, 59, 59, 59, 59, 58
 };
 
-const std::uint64_t magicmoves_b_magics[64] = {
+const std::uint64_t blooto::magicmoves_b_magics[64] = {
     0x0002020202020200ULL, 0x0002020202020000ULL,
     0x0004010202000000ULL, 0x0004040080000000ULL,
     0x0001104000000000ULL, 0x0000821040000000ULL,
@@ -176,7 +176,7 @@ const std::uint64_t magicmoves_b_magics[64] = {
     0x0000040404040400ULL, 0x0002020202020200ULL
 };
 
-const std::uint64_t magicmoves_b_mask[64] = {
+const std::uint64_t blooto::magicmoves_b_mask[64] = {
     0x0040201008040200ULL, 0x0000402010080400ULL,
     0x0000004020100A00ULL, 0x0000000040221400ULL,
     0x0000000002442800ULL, 0x0000000204085000ULL,
@@ -213,9 +213,9 @@ const std::uint64_t magicmoves_b_mask[64] = {
 
 #ifdef MINIMIZE_MAGIC
 
-std::uint64_t magicmovesbdb[5248];
+static std::uint64_t magicmovesbdb[5248];
 
-const std::uint64_t* magicmoves_b_indices[64] = {
+const std::uint64_t *blooto::magicmoves_b_indices[64] = {
     magicmovesbdb+4992, magicmovesbdb+2624,
     magicmovesbdb+256,  magicmovesbdb+896,
     magicmovesbdb+1280, magicmovesbdb+1664,
@@ -253,9 +253,9 @@ const std::uint64_t* magicmoves_b_indices[64] = {
 #else
 
 #ifndef PERFECT_MAGIC_HASH
-std::uint64_t magicmovesbdb[64][1<<9];
+std::uint64_t blooto::magicmovesbdb[64][1<<9];
 #else
-std::uint64_t magicmovesbdb[1428];
+std::uint64_t blooto::magicmovesbdb[1428];
 PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
 #endif
 
@@ -263,9 +263,9 @@ PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
 
 #ifdef MINIMIZE_MAGIC
 
-std::uint64_t magicmovesrdb[102400];
+static std::uint64_t magicmovesrdb[102400];
 
-const std::uint64_t* magicmoves_r_indices[64] = {
+const std::uint64_t *blooto::magicmoves_r_indices[64] = {
     magicmovesrdb+86016, magicmovesrdb+73728,
     magicmovesrdb+36864, magicmovesrdb+43008,
     magicmovesrdb+47104, magicmovesrdb+51200,
@@ -303,10 +303,10 @@ const std::uint64_t* magicmoves_r_indices[64] = {
 #else
 
 #ifndef PERFECT_MAGIC_HASH
-std::uint64_t magicmovesrdb[64][1<<12];
+std::uint64_t blooto::magicmovesrdb[64][1<<12];
 #else
-std::uint64_t magicmovesrdb[4900];
-PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
+std::uint64_t blooto::magicmovesrdb[4900];
+PERFECT_MAGIC_HASH blooto::magicmoves_r_indices[64][1<<12];
 #endif
 
 #endif
@@ -448,7 +448,7 @@ static std::uint64_t initmagicmoves_Bmoves(const int square,
 */
 #endif
 
-void initmagicmoves()
+void blooto::initmagicmoves()
 {
     int i;
 

@@ -83,12 +83,14 @@
 //it uses variable shift for each square
 //#define VARIABLE_SHIFT
 
-extern const std::uint64_t magicmoves_r_magics[64];
-extern const std::uint64_t magicmoves_r_mask[64];
-extern const std::uint64_t magicmoves_b_magics[64];
-extern const std::uint64_t magicmoves_b_mask[64];
-extern const unsigned int magicmoves_b_shift[64];
-extern const unsigned int magicmoves_r_shift[64];
+namespace blooto {
+
+    extern const std::uint64_t magicmoves_r_magics[64];
+    extern const std::uint64_t magicmoves_r_mask[64];
+    extern const std::uint64_t magicmoves_b_magics[64];
+    extern const std::uint64_t magicmoves_b_mask[64];
+    extern const unsigned int magicmoves_b_shift[64];
+    extern const unsigned int magicmoves_r_shift[64];
 
 #ifndef VARIABLE_SHIFT
 #define MINIMAL_B_BITS_SHIFT(square) 55
@@ -101,16 +103,16 @@ extern const unsigned int magicmoves_r_shift[64];
 #ifndef PERFECT_MAGIC_HASH
 #ifdef MINIMIZE_MAGIC
 
-//extern std::uint64_t magicmovesbdb[5248];
-extern const std::uint64_t* magicmoves_b_indices[64];
+    //extern std::uint64_t magicmovesbdb[5248];
+    extern const std::uint64_t* magicmoves_b_indices[64];
 
-//extern std::uint64_t magicmovesrdb[102400];
-extern const std::uint64_t* magicmoves_r_indices[64];
+    //extern std::uint64_t magicmovesrdb[102400];
+    extern const std::uint64_t* magicmoves_r_indices[64];
 
 #else //Don't Minimize database size
 
-extern std::uint64_t magicmovesbdb[64][1<<9];
-extern std::uint64_t magicmovesrdb[64][1<<12];
+    extern std::uint64_t magicmovesbdb[64][1<<9];
+    extern std::uint64_t magicmovesrdb[64][1<<12];
 
 #endif //MINIMIAZE_MAGICMOVES
 
@@ -118,10 +120,10 @@ extern std::uint64_t magicmovesrdb[64][1<<12];
 
 #ifndef MINIMIZE_MAGIC
 
-extern std::uint64_t magicmovesbdb[1428];
-extern std::uint64_t magicmovesrdb[4900];
-extern PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
-extern PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
+    extern std::uint64_t magicmovesbdb[1428];
+    extern std::uint64_t magicmovesrdb[4900];
+    extern PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
+    extern PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
 
 #else
 
@@ -132,101 +134,101 @@ extern PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
 
 #endif //PERFCT_MAGIC_HASH
 
-inline std::uint64_t Bmagic(const unsigned int square,
-                            const std::uint64_t occupancy)
-{
+    inline std::uint64_t Bmagic(const unsigned int square,
+                                const std::uint64_t occupancy)
+    {
 #ifndef PERFECT_MAGIC_HASH
 
 #ifdef MINIMIZE_MAGIC
-    return
-        *(magicmoves_b_indices[square] +
-          (((occupancy & magicmoves_b_mask[square]) *
-            magicmoves_b_magics[square])>>magicmoves_b_shift[square]));
+        return
+            *(magicmoves_b_indices[square] +
+              (((occupancy & magicmoves_b_mask[square]) *
+                magicmoves_b_magics[square])>>magicmoves_b_shift[square]));
 #else
-    return
-        magicmovesbdb[square][(((occupancy) & magicmoves_b_mask[square]) *
-                               magicmoves_b_magics[square]) >>
-                              MINIMAL_B_BITS_SHIFT(square)];
+        return
+            magicmovesbdb[square][(((occupancy) & magicmoves_b_mask[square]) *
+                                   magicmoves_b_magics[square]) >>
+                                  MINIMAL_B_BITS_SHIFT(square)];
 #endif
 
 #else
 
-    return
-        magicmovesbdb[magicmoves_b_indices[square]
-                                          [(((occupancy) &
-                                             magicmoves_b_mask[square]) *
-                                            magicmoves_b_magics[square]) >>
-                                           MINIMAL_B_BITS_SHIFT(square)]];
+        return
+            magicmovesbdb[magicmoves_b_indices[square]
+                                              [(((occupancy) &
+                                                 magicmoves_b_mask[square]) *
+                                                magicmoves_b_magics[square]) >>
+                                               MINIMAL_B_BITS_SHIFT(square)]];
 
 #endif
-}
+    }
 
-inline std::uint64_t Rmagic(const unsigned int square,
-                            const std::uint64_t occupancy)
-{
+    inline std::uint64_t Rmagic(const unsigned int square,
+                                const std::uint64_t occupancy)
+    {
 #ifndef PERFECT_MAGIC_HASH
 
 #ifdef MINIMIZE_MAGIC
-    return
-        *(magicmoves_r_indices[square] +
-          (((occupancy&magicmoves_r_mask[square]) *
-            magicmoves_r_magics[square])>>magicmoves_r_shift[square]));
+        return
+            *(magicmoves_r_indices[square] +
+              (((occupancy&magicmoves_r_mask[square]) *
+                magicmoves_r_magics[square])>>magicmoves_r_shift[square]));
 
 #else
-    return
-        magicmovesrdb[square][(((occupancy) & magicmoves_r_mask[square]) *
-                               magicmoves_r_magics[square]) >>
-                              MINIMAL_R_BITS_SHIFT(square)];
+        return
+            magicmovesrdb[square][(((occupancy) & magicmoves_r_mask[square]) *
+                                   magicmoves_r_magics[square]) >>
+                                  MINIMAL_R_BITS_SHIFT(square)];
 #endif
 
 #else
 
-    return
-        magicmovesrdb[magicmoves_r_indices[square]
-                                          [(((occupancy) &
-                                             magicmoves_r_mask[square]) *
-                                            magicmoves_r_magics[square]) >>
-                                           MINIMAL_R_BITS_SHIFT(square)]];
+        return
+            magicmovesrdb[magicmoves_r_indices[square]
+                                              [(((occupancy) &
+                                                 magicmoves_r_mask[square]) *
+                                                magicmoves_r_magics[square]) >>
+                                               MINIMAL_R_BITS_SHIFT(square)]];
 
 #endif
-}
+    }
 
-inline std::uint64_t BmagicNOMASK(const unsigned int square,
-                                  const std::uint64_t occupancy)
-{
+    inline std::uint64_t BmagicNOMASK(const unsigned int square,
+                                      const std::uint64_t occupancy)
+    {
 #ifndef PERFECT_MAGIC_HASH
 
 #ifdef MINIMIZE_MAGIC
-    return
-        *(magicmoves_b_indices[square] +
-          (((occupancy) * magicmoves_b_magics[square]) >>
-           magicmoves_b_shift[square]));
+        return
+            *(magicmoves_b_indices[square] +
+              (((occupancy) * magicmoves_b_magics[square]) >>
+               magicmoves_b_shift[square]));
 #else
-    return
-        magicmovesbdb[square][((occupancy) * magicmoves_b_magics[square]) >>
-                              MINIMAL_B_BITS_SHIFT(square)];
+        return
+            magicmovesbdb[square][((occupancy) * magicmoves_b_magics[square]) >>
+                                  MINIMAL_B_BITS_SHIFT(square)];
 #endif
 
 #else
-    return
-        magicmovesbdb[magicmoves_b_indices[square]
-                                          [((occupancy) *
-                                            magicmoves_b_magics[square]) >>
-                                           MINIMAL_B_BITS_SHIFT(square)]];
+        return
+            magicmovesbdb[magicmoves_b_indices[square]
+                                              [((occupancy) *
+                                                magicmoves_b_magics[square]) >>
+                                               MINIMAL_B_BITS_SHIFT(square)]];
 
 #endif
-}
+    }
 
-inline std::uint64_t RmagicNOMASK(const unsigned int square,
-                                  const std::uint64_t occupancy)
-{
+    inline std::uint64_t RmagicNOMASK(const unsigned int square,
+                                      const std::uint64_t occupancy)
+    {
 #ifndef PERFECT_MAGIC_HASH
 
 #ifdef MINIMIZE_MAGIC
-    return
-        *(magicmoves_r_indices[square] +
-          (((occupancy) * magicmoves_r_magics[square]) >>
-           magicmoves_r_shift[square]));
+        return
+            *(magicmoves_r_indices[square] +
+              (((occupancy) * magicmoves_r_magics[square]) >>
+               magicmoves_r_shift[square]));
 #else
 
         return
@@ -236,26 +238,29 @@ inline std::uint64_t RmagicNOMASK(const unsigned int square,
 #endif
 
 #else
-    return
-        magicmovesrdb[magicmoves_r_indices[square]
-                                          [((occupancy) *
-                                            magicmoves_r_magics[square]) >>
-                                           MINIMAL_R_BITS_SHIFT(square)]];
+        return
+            magicmovesrdb[magicmoves_r_indices[square]
+                                              [((occupancy) *
+                                                magicmoves_r_magics[square]) >>
+                                               MINIMAL_R_BITS_SHIFT(square)]];
 #endif
-}
+    }
 
-inline std::uint64_t Qmagic(const unsigned int square,
-                            const std::uint64_t occupancy)
-{
-    return Bmagic(square, occupancy) | Rmagic(square, occupancy);
-}
+    inline std::uint64_t Qmagic(const unsigned int square,
+                                const std::uint64_t occupancy)
+    {
+        return Bmagic(square, occupancy) | Rmagic(square, occupancy);
+    }
 
-inline std::uint64_t QmagicNOMASK(const unsigned int square,
-                                  const std::uint64_t occupancy)
-{
-    return BmagicNOMASK(square, occupancy) | RmagicNOMASK(square, occupancy);
-}
+    inline std::uint64_t QmagicNOMASK(const unsigned int square,
+                                      const std::uint64_t occupancy)
+    {
+        return BmagicNOMASK(square, occupancy) |
+               RmagicNOMASK(square, occupancy);
+    }
 
-void initmagicmoves();
+    void initmagicmoves();
+
+} // namespace blooto
 
 #endif // _BLOOTO_MAGICMOVES_HPP

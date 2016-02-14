@@ -83,14 +83,6 @@
 //it uses variable shift for each square
 //#define VARIABLE_SHIFT
 
-#ifndef C64
-#if (!defined(_MSC_VER) || _MSC_VER>1300)
-#define C64(constantU64) constantU64##ULL
-#else
-#define C64(constantU64) constantU64
-#endif
-#endif
-
 extern const std::uint64_t magicmoves_r_magics[64];
 extern const std::uint64_t magicmoves_r_mask[64];
 extern const std::uint64_t magicmoves_b_magics[64];

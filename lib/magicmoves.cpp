@@ -327,23 +327,23 @@ static std::uint64_t initmagicmoves_occ(const int* squares,
 static blooto::BitBoard initmagicmoves_Rmoves(const int square,
                                               const std::uint64_t occ)
 {
-    std::uint64_t ret=0;
+    std::uint64_t ret = 0;
     std::uint64_t bit;
-    std::uint64_t rowbits = (((std::uint64_t)0xFF) << (8 * (square / 8)));
+    std::uint64_t rowbits = std::uint64_t(0xFF) << (8 * (square / 8));
 
-    bit = (((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     do {
         bit <<= 8;
         ret |= bit;
     } while(bit && !(bit & occ));
 
-    bit = (((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     do {
         bit >>= 8;
         ret |= bit;
     } while (bit && !(bit & occ));
 
-    bit = (((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     do {
         bit <<= 1;
         if(bit & rowbits)
@@ -352,11 +352,11 @@ static blooto::BitBoard initmagicmoves_Rmoves(const int square,
             break;
     } while (!(bit & occ));
 
-    bit=(((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     do {
         bit >>= 1;
         if (bit & rowbits)
-            ret|=bit;
+            ret |= bit;
         else
             break;
     } while (!(bit & occ));
@@ -370,9 +370,9 @@ static blooto::BitBoard initmagicmoves_Bmoves(const int square,
     std::uint64_t ret = 0;
     std::uint64_t bit;
     std::uint64_t bit2;
-    std::uint64_t rowbits = (((std::uint64_t)0xFF) << (8 * (square / 8)));
+    std::uint64_t rowbits = std::uint64_t(0xFF) << (8 * (square / 8));
 
-    bit = (((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     bit2 = bit;
     do {
         bit <<= 8 - 1;
@@ -383,7 +383,7 @@ static blooto::BitBoard initmagicmoves_Bmoves(const int square,
             break;
     } while (bit && !(bit & occ));
 
-    bit=(((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     bit2 = bit;
     do {
         bit <<= 8 + 1;
@@ -394,7 +394,7 @@ static blooto::BitBoard initmagicmoves_Bmoves(const int square,
             break;
     } while (bit && !(bit & occ));
 
-    bit = (((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     bit2 = bit;
     do {
         bit >>= 8 - 1;
@@ -405,7 +405,7 @@ static blooto::BitBoard initmagicmoves_Bmoves(const int square,
             break;
     } while (bit && !(bit & occ));
 
-    bit = (((std::uint64_t)(1)) << square);
+    bit = std::uint64_t(1) << square;
     bit2 = bit;
     do {
         bit >>= 8 + 1;
@@ -549,17 +549,17 @@ void blooto::initmagicmoves()
 
     for (i = 0; i < 64; i++) {
         int squares[64];
-        int numsquares=0;
+        int numsquares = 0;
         std::uint64_t temp = magicmoves_b_mask[i];
-        while(temp) {
-            std::uint64_t bit=temp&-temp;
+        while (temp) {
+            std::uint64_t bit = temp & -temp;
             squares[numsquares++] =
                 initmagicmoves_bitpos64_database[(bit *
                                                   0x07EDD5E59A4E28C2ULL) >>
                                                  58];
             temp ^= bit;
         }
-        for (temp = 0; temp < (((std::uint64_t)(1)) << numsquares); temp++) {
+        for (temp = 0; temp < (std::uint64_t(1) << numsquares); temp++) {
             std::uint64_t tempocc = initmagicmoves_occ(squares,
                                                        numsquares,
                                                        temp);
@@ -583,6 +583,7 @@ void blooto::initmagicmoves()
 #endif
         }
     }
+
     for (i = 0; i < 64; i++) {
         int squares[64];
         int numsquares = 0;
@@ -595,7 +596,7 @@ void blooto::initmagicmoves()
                                                  58];
                 temp ^= bit;
         }
-        for (temp = 0; temp < (((std::uint64_t)(1)) << numsquares); temp++) {
+        for (temp = 0; temp < (std::uint64_t(1) << numsquares); temp++) {
             std::uint64_t tempocc = initmagicmoves_occ(squares,
                                                        numsquares,
                                                        temp);

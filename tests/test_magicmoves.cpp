@@ -69,4 +69,22 @@ BOOST_AUTO_TEST_CASE(test_magicmoves) {
     BitBoard bb6e{Square::B2 | Square::C3};
     BOOST_CHECK_EQUAL_COLLECTIONS(bb6.begin(), bb6.end(),
                                   bb6e.begin(), bb6e.end());
+    BitBoard bb7{Bmagic(Square::D3, {})};
+    BitBoard bb7e{
+        Square::B1 | Square::C2 | /* D3 */
+        Square::E4 | Square::F5 | Square::G6 | Square::H7 |
+        Square::A6 | Square::B5 | Square::C4 | /* D3 */
+        Square::E2 | Square::F1
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(bb7.begin(), bb7.end(),
+                                  bb7e.begin(), bb7e.end());
+    BitBoard bb8{Bmagic(Square::D3, {Square::F5 | Square::B5})};
+    BitBoard bb8e{
+        Square::B1 | Square::C2 | /* D3 */
+        Square::E4 | Square::F5 | /* ... */
+        /* ... */ Square::B5 | Square::C4 | /* D3 */
+        Square::E2 | Square::F1
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(bb8.begin(), bb8.end(),
+                                  bb8e.begin(), bb8e.end());
 }

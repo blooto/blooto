@@ -48,7 +48,7 @@
 //0x007FFCDDFCED714AULL - B8 10 bit
 //0x003FFFCDFFD88096ULL - C8 10 bit
 
-const unsigned int blooto::magicmoves_r_shift[64] = {
+const unsigned int blooto::RMagic::shift[64] = {
     52, 53, 53, 53, 53, 53, 53, 52,
     53, 54, 54, 54, 54, 54, 54, 53,
     53, 54, 54, 54, 54, 54, 54, 53,
@@ -59,7 +59,7 @@ const unsigned int blooto::magicmoves_r_shift[64] = {
     53, 54, 54, 53, 53, 53, 53, 53
 };
 
-const std::uint64_t blooto::magicmoves_r_magics[64] = {
+const std::uint64_t blooto::RMagic::magics[64] = {
     0x0080001020400080ULL, 0x0040001000200040ULL,
     0x0080081000200080ULL, 0x0080040800100080ULL,
     0x0080020400080080ULL, 0x0080010200040080ULL,
@@ -94,7 +94,7 @@ const std::uint64_t blooto::magicmoves_r_magics[64] = {
     0x0001000082000401ULL, 0x0001FFFAABFAD1A2ULL
 };
 
-const std::uint64_t blooto::magicmoves_r_mask[64] = {
+const std::uint64_t blooto::RMagic::mask[64] = {
     0x000101010101017EULL, 0x000202020202027CULL,
     0x000404040404047AULL, 0x0008080808080876ULL,
     0x001010101010106EULL, 0x002020202020205EULL,
@@ -130,7 +130,7 @@ const std::uint64_t blooto::magicmoves_r_mask[64] = {
 };
 
 //my original tables for bishops
-const unsigned int blooto::magicmoves_b_shift[64] = {
+const unsigned int blooto::BMagic::shift[64] = {
     58, 59, 59, 59, 59, 59, 59, 58,
     59, 59, 59, 59, 59, 59, 59, 59,
     59, 59, 57, 57, 57, 57, 59, 59,
@@ -141,7 +141,7 @@ const unsigned int blooto::magicmoves_b_shift[64] = {
     58, 59, 59, 59, 59, 59, 59, 58
 };
 
-const std::uint64_t blooto::magicmoves_b_magics[64] = {
+const std::uint64_t blooto::BMagic::magics[64] = {
     0x0002020202020200ULL, 0x0002020202020000ULL,
     0x0004010202000000ULL, 0x0004040080000000ULL,
     0x0001104000000000ULL, 0x0000821040000000ULL,
@@ -176,7 +176,7 @@ const std::uint64_t blooto::magicmoves_b_magics[64] = {
     0x0000040404040400ULL, 0x0002020202020200ULL
 };
 
-const std::uint64_t blooto::magicmoves_b_mask[64] = {
+const std::uint64_t blooto::BMagic::mask[64] = {
     0x0040201008040200ULL, 0x0000402010080400ULL,
     0x0000004020100A00ULL, 0x0000000040221400ULL,
     0x0000000002442800ULL, 0x0000000204085000ULL,
@@ -210,106 +210,6 @@ const std::uint64_t blooto::magicmoves_b_mask[64] = {
     0x0028440200000000ULL, 0x0050080402000000ULL,
     0x0020100804020000ULL, 0x0040201008040200ULL
 };
-
-#ifdef MINIMIZE_MAGIC
-
-static blooto::BitBoard magicmovesbdb[5248];
-
-const blooto::BitBoard *blooto::magicmoves_b_indices[64] = {
-    magicmovesbdb+4992, magicmovesbdb+2624,
-    magicmovesbdb+256,  magicmovesbdb+896,
-    magicmovesbdb+1280, magicmovesbdb+1664,
-    magicmovesbdb+4800, magicmovesbdb+5120,
-    magicmovesbdb+2560, magicmovesbdb+2656,
-    magicmovesbdb+288,  magicmovesbdb+928,
-    magicmovesbdb+1312, magicmovesbdb+1696,
-    magicmovesbdb+4832, magicmovesbdb+4928,
-    magicmovesbdb+0,    magicmovesbdb+128,
-    magicmovesbdb+320,  magicmovesbdb+960,
-    magicmovesbdb+1344, magicmovesbdb+1728,
-    magicmovesbdb+2304, magicmovesbdb+2432,
-    magicmovesbdb+32,   magicmovesbdb+160,
-    magicmovesbdb+448,  magicmovesbdb+2752,
-    magicmovesbdb+3776, magicmovesbdb+1856,
-    magicmovesbdb+2336, magicmovesbdb+2464,
-    magicmovesbdb+64,   magicmovesbdb+192,
-    magicmovesbdb+576,  magicmovesbdb+3264,
-    magicmovesbdb+4288, magicmovesbdb+1984,
-    magicmovesbdb+2368, magicmovesbdb+2496,
-    magicmovesbdb+96,   magicmovesbdb+224,
-    magicmovesbdb+704,  magicmovesbdb+1088,
-    magicmovesbdb+1472, magicmovesbdb+2112,
-    magicmovesbdb+2400, magicmovesbdb+2528,
-    magicmovesbdb+2592, magicmovesbdb+2688,
-    magicmovesbdb+832,  magicmovesbdb+1216,
-    magicmovesbdb+1600, magicmovesbdb+2240,
-    magicmovesbdb+4864, magicmovesbdb+4960,
-    magicmovesbdb+5056, magicmovesbdb+2720,
-    magicmovesbdb+864,  magicmovesbdb+1248,
-    magicmovesbdb+1632, magicmovesbdb+2272,
-    magicmovesbdb+4896, magicmovesbdb+5184
-};
-
-#else
-
-#ifndef PERFECT_MAGIC_HASH
-blooto::BitBoard blooto::magicmovesbdb[64][1<<9];
-#else
-blooto::BitBoard blooto::magicmovesbdb[1428];
-PERFECT_MAGIC_HASH blooto::magicmoves_b_indices[64][1<<9];
-#endif
-
-#endif
-
-#ifdef MINIMIZE_MAGIC
-
-static blooto::BitBoard magicmovesrdb[102400];
-
-const blooto::BitBoard *blooto::magicmoves_r_indices[64] = {
-    magicmovesrdb+86016, magicmovesrdb+73728,
-    magicmovesrdb+36864, magicmovesrdb+43008,
-    magicmovesrdb+47104, magicmovesrdb+51200,
-    magicmovesrdb+77824, magicmovesrdb+94208,
-    magicmovesrdb+69632, magicmovesrdb+32768,
-    magicmovesrdb+38912, magicmovesrdb+10240,
-    magicmovesrdb+14336, magicmovesrdb+53248,
-    magicmovesrdb+57344, magicmovesrdb+81920,
-    magicmovesrdb+24576, magicmovesrdb+33792,
-    magicmovesrdb+6144,  magicmovesrdb+11264,
-    magicmovesrdb+15360, magicmovesrdb+18432,
-    magicmovesrdb+58368, magicmovesrdb+61440,
-    magicmovesrdb+26624, magicmovesrdb+4096,
-    magicmovesrdb+7168,  magicmovesrdb+0,
-    magicmovesrdb+2048,  magicmovesrdb+19456,
-    magicmovesrdb+22528, magicmovesrdb+63488,
-    magicmovesrdb+28672, magicmovesrdb+5120,
-    magicmovesrdb+8192,  magicmovesrdb+1024,
-    magicmovesrdb+3072,  magicmovesrdb+20480,
-    magicmovesrdb+23552, magicmovesrdb+65536,
-    magicmovesrdb+30720, magicmovesrdb+34816,
-    magicmovesrdb+9216,  magicmovesrdb+12288,
-    magicmovesrdb+16384, magicmovesrdb+21504,
-    magicmovesrdb+59392, magicmovesrdb+67584,
-    magicmovesrdb+71680, magicmovesrdb+35840,
-    magicmovesrdb+39936, magicmovesrdb+13312,
-    magicmovesrdb+17408, magicmovesrdb+54272,
-    magicmovesrdb+60416, magicmovesrdb+83968,
-    magicmovesrdb+90112, magicmovesrdb+75776,
-    magicmovesrdb+40960, magicmovesrdb+45056,
-    magicmovesrdb+49152, magicmovesrdb+55296,
-    magicmovesrdb+79872, magicmovesrdb+98304
-};
-
-#else
-
-#ifndef PERFECT_MAGIC_HASH
-blooto::BitBoard blooto::magicmovesrdb[64][1<<12];
-#else
-blooto::BitBoard blooto::magicmovesrdb[4900];
-PERFECT_MAGIC_HASH blooto::magicmoves_r_indices[64][1<<12];
-#endif
-
-#endif
 
 static std::uint64_t initmagicmoves_occ(const int* squares,
                                         const int numSquares,
@@ -425,138 +325,77 @@ static blooto::BitBoard initmagicmoves_Bmoves(const int square,
 #ifndef PERFECT_MAGIC_HASH
 #ifdef MINIMIZE_MAGIC
 #define BmagicNOMASK2(square, occupancy) \
-  *(magicmoves_b_indices2[square] + \
-  (((occupancy)*magicmoves_b_magics[square]) >> magicmoves_b_shift[square]))
+  *(indices[square] + \
+  (((occupancy)*magics[square]) >> shift[square]))
 #define RmagicNOMASK2(square, occupancy) \
-  *(magicmoves_r_indices2[square] + \
-  (((occupancy)*magicmoves_r_magics[square]) >> magicmoves_r_shift[square]))
+  *(indices[square] + \
+  (((occupancy)*magics[square]) >> shift[square]))
 #else
 #define BmagicNOMASK2(square, occupancy) \
-  magicmovesbdb[square][((occupancy) * magicmoves_b_magics[square]) >> \
-                        MINIMAL_B_BITS_SHIFT(square)]
+  db[square][((occupancy) * magics[square]) >> \
+             MINIMAL_B_BITS_SHIFT(*this, square)]
 #define RmagicNOMASK2(square, occupancy) \
-  magicmovesrdb[square][((occupancy) * magicmoves_r_magics[square]) >> \
-                        MINIMAL_R_BITS_SHIFT(square)]
+  db[square][((occupancy) * magics[square]) >> \
+             MINIMAL_R_BITS_SHIFT(*this, square)]
 #endif
 /*#else
 #define BmagicNOMASK2(square, occupancy) \
-  magicmovesbdb[magicmoves_b_indices[square][((occupancy) * \
-  magicmoves_b_magics[square])>>MINIMAL_B_BITS_SHIFT]]
+  db[indices[square][((occupancy) * magics[square])>>MINIMAL_B_BITS_SHIFT]]
 #define RmagicNOMASK2(square, occupancy) \
-  magicmovesrdb[magicmoves_r_indices[square][((occupancy) * \
-  magicmoves_r_magics[square])>>MINIMAL_R_BITS_SHIFT]]
+  db[indices[square][((occupancy) * magics[square])>>MINIMAL_R_BITS_SHIFT]]
 */
 #endif
 
-void blooto::initmagicmoves()
+//for bitscans :
+//initmagicmoves_bitpos64_database[(x*0x07EDD5E59A4E28C2ULL)>>58]
+static const int bitpos64_database[64] = {
+    63,  0, 58,  1, 59, 47, 53,  2,
+    60, 39, 48, 27, 54, 33, 42,  3,
+    61, 51, 37, 40, 49, 18, 28, 20,
+    55, 30, 34, 11, 43, 14, 22,  4,
+    62, 57, 46, 52, 38, 26, 32, 41,
+    50, 36, 17, 19, 29, 10, 13, 21,
+    56, 45, 25, 31, 35, 16,  9, 12,
+    44, 24, 15,  8, 23,  7,  6,  5
+};
+
+blooto::BMagic::BMagic()
+#ifdef MINIMIZE_MAGIC
+: indices{
+    db+4992, db+2624, db+256,  db+896,
+    db+1280, db+1664, db+4800, db+5120,
+    db+2560, db+2656, db+288,  db+928,
+    db+1312, db+1696, db+4832, db+4928,
+    db+0,    db+128,  db+320,  db+960,
+    db+1344, db+1728, db+2304, db+2432,
+    db+32,   db+160,  db+448,  db+2752,
+    db+3776, db+1856, db+2336, db+2464,
+    db+64,   db+192,  db+576,  db+3264,
+    db+4288, db+1984, db+2368, db+2496,
+    db+96,   db+224,  db+704,  db+1088,
+    db+1472, db+2112, db+2400, db+2528,
+    db+2592, db+2688, db+832,  db+1216,
+    db+1600, db+2240, db+4864, db+4960,
+    db+5056, db+2720, db+864,  db+1248,
+    db+1632, db+2272, db+4896, db+5184
+}
+#endif
 {
     int i;
 
-    //for bitscans :
-    //initmagicmoves_bitpos64_database[(x*0x07EDD5E59A4E28C2ULL)>>58]
-    int initmagicmoves_bitpos64_database[64] = {
-        63,  0, 58,  1, 59, 47, 53,  2,
-        60, 39, 48, 27, 54, 33, 42,  3,
-        61, 51, 37, 40, 49, 18, 28, 20,
-        55, 30, 34, 11, 43, 14, 22,  4,
-        62, 57, 46, 52, 38, 26, 32, 41,
-        50, 36, 17, 19, 29, 10, 13, 21,
-        56, 45, 25, 31, 35, 16,  9, 12,
-        44, 24, 15,  8, 23,  7,  6,  5
-    };
-
-#ifdef MINIMIZE_MAGIC
-
-    //identical to magicmove_x_indices except without the const modifer
-    BitBoard *magicmoves_b_indices2[64] = {
-        magicmovesbdb+4992, magicmovesbdb+2624,
-        magicmovesbdb+256,  magicmovesbdb+896,
-        magicmovesbdb+1280, magicmovesbdb+1664,
-        magicmovesbdb+4800, magicmovesbdb+5120,
-        magicmovesbdb+2560, magicmovesbdb+2656,
-        magicmovesbdb+288,  magicmovesbdb+928,
-        magicmovesbdb+1312, magicmovesbdb+1696,
-        magicmovesbdb+4832, magicmovesbdb+4928,
-        magicmovesbdb+0,    magicmovesbdb+128,
-        magicmovesbdb+320,  magicmovesbdb+960,
-        magicmovesbdb+1344, magicmovesbdb+1728,
-        magicmovesbdb+2304, magicmovesbdb+2432,
-        magicmovesbdb+32,   magicmovesbdb+160,
-        magicmovesbdb+448,  magicmovesbdb+2752,
-        magicmovesbdb+3776, magicmovesbdb+1856,
-        magicmovesbdb+2336, magicmovesbdb+2464,
-        magicmovesbdb+64,   magicmovesbdb+192,
-        magicmovesbdb+576,  magicmovesbdb+3264,
-        magicmovesbdb+4288, magicmovesbdb+1984,
-        magicmovesbdb+2368, magicmovesbdb+2496,
-        magicmovesbdb+96,   magicmovesbdb+224,
-        magicmovesbdb+704,  magicmovesbdb+1088,
-        magicmovesbdb+1472, magicmovesbdb+2112,
-        magicmovesbdb+2400, magicmovesbdb+2528,
-        magicmovesbdb+2592, magicmovesbdb+2688,
-        magicmovesbdb+832,  magicmovesbdb+1216,
-        magicmovesbdb+1600, magicmovesbdb+2240,
-        magicmovesbdb+4864, magicmovesbdb+4960,
-        magicmovesbdb+5056, magicmovesbdb+2720,
-        magicmovesbdb+864,  magicmovesbdb+1248,
-        magicmovesbdb+1632, magicmovesbdb+2272,
-        magicmovesbdb+4896, magicmovesbdb+5184
-    };
-
-    BitBoard *magicmoves_r_indices2[64] = {
-        magicmovesrdb+86016, magicmovesrdb+73728,
-        magicmovesrdb+36864, magicmovesrdb+43008,
-        magicmovesrdb+47104, magicmovesrdb+51200,
-        magicmovesrdb+77824, magicmovesrdb+94208,
-        magicmovesrdb+69632, magicmovesrdb+32768,
-        magicmovesrdb+38912, magicmovesrdb+10240,
-        magicmovesrdb+14336, magicmovesrdb+53248,
-        magicmovesrdb+57344, magicmovesrdb+81920,
-        magicmovesrdb+24576, magicmovesrdb+33792,
-        magicmovesrdb+6144,  magicmovesrdb+11264,
-        magicmovesrdb+15360, magicmovesrdb+18432,
-        magicmovesrdb+58368, magicmovesrdb+61440,
-        magicmovesrdb+26624, magicmovesrdb+4096,
-        magicmovesrdb+7168,  magicmovesrdb+0,
-        magicmovesrdb+2048,  magicmovesrdb+19456,
-        magicmovesrdb+22528, magicmovesrdb+63488,
-        magicmovesrdb+28672, magicmovesrdb+5120,
-        magicmovesrdb+8192,  magicmovesrdb+1024,
-        magicmovesrdb+3072,  magicmovesrdb+20480,
-        magicmovesrdb+23552, magicmovesrdb+65536,
-        magicmovesrdb+30720, magicmovesrdb+34816,
-        magicmovesrdb+9216,  magicmovesrdb+12288,
-        magicmovesrdb+16384, magicmovesrdb+21504,
-        magicmovesrdb+59392, magicmovesrdb+67584,
-        magicmovesrdb+71680, magicmovesrdb+35840,
-        magicmovesrdb+39936, magicmovesrdb+13312,
-        magicmovesrdb+17408, magicmovesrdb+54272,
-        magicmovesrdb+60416, magicmovesrdb+83968,
-        magicmovesrdb+90112, magicmovesrdb+75776,
-        magicmovesrdb+40960, magicmovesrdb+45056,
-        magicmovesrdb+49152, magicmovesrdb+55296,
-        magicmovesrdb+79872, magicmovesrdb+98304
-    };
-
-#endif // MINIMIZE_MAGIC
-
 #ifdef PERFECT_MAGIC_HASH
     for (i = 0; i < 1428; i++)
-        magicmovesbdb[i] = BitBoard{};
-    for (i = 0; i < 4900; i++)
-        magicmovesrdb[i] = BitBoard{};
+        db[i] = BitBoard{};
 #endif
 
     for (i = 0; i < 64; i++) {
         int squares[64];
         int numsquares = 0;
-        std::uint64_t temp = magicmoves_b_mask[i];
+        std::uint64_t temp = mask[i];
         while (temp) {
             std::uint64_t bit = temp & -temp;
             squares[numsquares++] =
-                initmagicmoves_bitpos64_database[(bit *
-                                                  0x07EDD5E59A4E28C2ULL) >>
-                                                 58];
+                bitpos64_database[(bit * 0x07EDD5E59A4E28C2ULL) >> 58];
             temp ^= bit;
         }
         for (temp = 0; temp < (std::uint64_t(1) << numsquares); temp++) {
@@ -568,15 +407,15 @@ void blooto::initmagicmoves()
 #else
             BitBoard moves = initmagicmoves_Bmoves(i, tempocc);
             std::uint64_t index =
-                (tempocc * magicmoves_b_magics[i]) >> MINIMAL_B_BITS_SHIFT(i);
+                (tempocc * magics[i]) >> MINIMAL_B_BITS_SHIFT(*this, i);
             int j;
             for (j = 0; j < 1428; j++) {
-                if (magicmovesbdb[j].empty()) {
-                    magicmovesbdb[j] = moves;
-                    magicmoves_b_indices[i][index] = j;
+                if (db[j].empty()) {
+                    db[j] = moves;
+                    indices[i][index] = j;
                     break;
-                } else if (magicmovesbdb[j] == moves) {
-                    magicmoves_b_indices[i][index] = j;
+                } else if (db[j] == moves) {
+                    indices[i][index] = j;
                     break;
                 }
             }
@@ -584,16 +423,45 @@ void blooto::initmagicmoves()
         }
     }
 
+}
+
+blooto::RMagic::RMagic()
+#ifdef MINIMIZE_MAGIC
+: indices{
+    db+86016, db+73728, db+36864, db+43008,
+    db+47104, db+51200, db+77824, db+94208,
+    db+69632, db+32768, db+38912, db+10240,
+    db+14336, db+53248, db+57344, db+81920,
+    db+24576, db+33792, db+6144,  db+11264,
+    db+15360, db+18432, db+58368, db+61440,
+    db+26624, db+4096,  db+7168,  db+0,
+    db+2048,  db+19456, db+22528, db+63488,
+    db+28672, db+5120,  db+8192,  db+1024,
+    db+3072,  db+20480, db+23552, db+65536,
+    db+30720, db+34816, db+9216,  db+12288,
+    db+16384, db+21504, db+59392, db+67584,
+    db+71680, db+35840, db+39936, db+13312,
+    db+17408, db+54272, db+60416, db+83968,
+    db+90112, db+75776, db+40960, db+45056,
+    db+49152, db+55296, db+79872, db+98304
+}
+#endif
+{
+    int i;
+
+#ifdef PERFECT_MAGIC_HASH
+    for (i = 0; i < 4900; i++)
+        db[i] = BitBoard{};
+#endif
+
     for (i = 0; i < 64; i++) {
         int squares[64];
         int numsquares = 0;
-        std::uint64_t temp = magicmoves_r_mask[i];
+        std::uint64_t temp = mask[i];
         while(temp) {
             std::uint64_t bit = temp & -temp;
             squares[numsquares++] =
-                initmagicmoves_bitpos64_database[(bit *
-                                                  0x07EDD5E59A4E28C2ULL) >>
-                                                 58];
+                bitpos64_database[(bit * 0x07EDD5E59A4E28C2ULL) >> 58];
                 temp ^= bit;
         }
         for (temp = 0; temp < (std::uint64_t(1) << numsquares); temp++) {
@@ -605,15 +473,15 @@ void blooto::initmagicmoves()
 #else
             BitBoard moves = initmagicmoves_Rmoves(i, tempocc);
             std::uint64_t index =
-                (tempocc * magicmoves_r_magics[i]) >> MINIMAL_R_BITS_SHIFT(i);
+                (tempocc * magics[i]) >> MINIMAL_R_BITS_SHIFT(*this, i);
             int j;
             for (j = 0; j < 4900; j++) {
-                if (magicmovesrdb[j].empty()) {
-                    magicmovesrdb[j] = moves;
-                    magicmoves_r_indices[i][index] = j;
+                if (db[j].empty()) {
+                    db[j] = moves;
+                    indices[i][index] = j;
                     break;
-                } else if (magicmovesrdb[j] == moves) {
-                    magicmoves_r_indices[i][index] = j;
+                } else if (db[j] == moves) {
+                    indices[i][index] = j;
                     break;
                 }
             }

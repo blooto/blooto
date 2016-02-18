@@ -87,183 +87,194 @@
 
 namespace blooto {
 
-    extern const std::uint64_t magicmoves_r_magics[64];
-    extern const std::uint64_t magicmoves_r_mask[64];
-    extern const std::uint64_t magicmoves_b_magics[64];
-    extern const std::uint64_t magicmoves_b_mask[64];
-    extern const unsigned int magicmoves_b_shift[64];
-    extern const unsigned int magicmoves_r_shift[64];
-
 #ifndef VARIABLE_SHIFT
-#define MINIMAL_B_BITS_SHIFT(square) 55
-#define MINIMAL_R_BITS_SHIFT(square) 52
+#define MINIMAL_B_BITS_SHIFT(inst, square) 55
+#define MINIMAL_R_BITS_SHIFT(inst, square) 52
 #else
-#define MINIMAL_B_BITS_SHIFT(square) magicmoves_b_shift[square]
-#define MINIMAL_R_BITS_SHIFT(square) magicmoves_r_shift[square]
+#define MINIMAL_B_BITS_SHIFT(inst, square) (inst).shift[square]
+#define MINIMAL_R_BITS_SHIFT(inst, square) (inst).shift[square]
 #endif
 
+    class BMagic {
+        static const std::uint64_t magics[64];
+        static const std::uint64_t mask[64];
+        static const unsigned int shift[64];
 #ifndef PERFECT_MAGIC_HASH
 #ifdef MINIMIZE_MAGIC
-
-    //extern BitBoard magicmovesbdb[5248];
-    extern const BitBoard *magicmoves_b_indices[64];
-
-    //extern BitBoard magicmovesrdb[102400];
-    extern const BitBoard *magicmoves_r_indices[64];
-
+        BitBoard db[5248];
+        BitBoard *indices[64];
 #else //Don't Minimize database size
-
-    extern BitBoard magicmovesbdb[64][1<<9];
-    extern BitBoard magicmovesrdb[64][1<<12];
-
+        BitBoard db[64][1<<9];
 #endif //MINIMIAZE_MAGICMOVES
-
 #else //PERFCT_MAGIC_HASH defined
-
 #ifndef MINIMIZE_MAGIC
-
-    extern BitBoard magicmovesbdb[1428];
-    extern BitBoard magicmovesrdb[4900];
-    extern PERFECT_MAGIC_HASH magicmoves_b_indices[64][1<<9];
-    extern PERFECT_MAGIC_HASH magicmoves_r_indices[64][1<<12];
-
+        BitBoard db[1428];
+        PERFECT_MAGIC_HASH indices[64][1<<9];
 #else
-
 #error magicmoves - MINIMIZED_MAGIC and PERFECT_MAGIC_HASH \
        cannot be used together
-
 #endif
-
 #endif //PERFCT_MAGIC_HASH
 
-    inline BitBoard Bmagic(const Square square, const BitBoard occupancy)
-    {
-        const unsigned sq = static_cast<unsigned>(square);
+        BMagic();
+
+        static const BMagic &instance() {
+            static BMagic inst_;
+            return inst_;
+        }
+    public:
+
+        static inline BitBoard moves(const Square square,
+                                     const BitBoard occupancy)
+        {
+            const unsigned sq = static_cast<unsigned>(square);
+            const BMagic &inst = instance();
 
 #ifndef PERFECT_MAGIC_HASH
-
 #ifdef MINIMIZE_MAGIC
-        return
-            *(magicmoves_b_indices[sq] +
-              (((occupancy.data() & magicmoves_b_mask[sq]) *
-                magicmoves_b_magics[sq]) >> magicmoves_b_shift[sq]));
+            return
+                *(inst.indices[sq] +
+                  (((occupancy.data() & inst.mask[sq]) *
+                    inst.magics[sq]) >> inst.shift[sq]));
 #else
-        return
-            magicmovesbdb[sq][((occupancy.data() & magicmoves_b_mask[sq]) *
-                                   magicmoves_b_magics[sq]) >>
-                                  MINIMAL_B_BITS_SHIFT(sq)];
+            return
+                inst.db[sq][((occupancy.data() & inst.mask[sq]) *
+                             inst.magics[sq]) >>
+                            MINIMAL_B_BITS_SHIFT(inst, sq)];
 #endif
-
 #else
-
-        return
-            magicmovesbdb[magicmoves_b_indices[sq]
-                                              [((occupancy.data() &
-                                                 magicmoves_b_mask[sq]) *
-                                                magicmoves_b_magics[sq]) >>
-                                               MINIMAL_B_BITS_SHIFT(sq)]];
-
+            return
+                inst.db[inst.indices[sq][((occupancy.data() & inst.mask[sq]) *
+                                          inst.magics[sq]) >>
+                                         MINIMAL_B_BITS_SHIFT(inst, sq)]];
 #endif
-    }
+        }
 
-    inline BitBoard Rmagic(const Square square, const BitBoard occupancy)
-    {
-        const unsigned sq = static_cast<unsigned>(square);
+        static inline BitBoard moves_nomask(const Square square,
+                                            const BitBoard occupancy)
+        {
+            const unsigned sq = static_cast<unsigned>(square);
+            const BMagic &inst = instance();
 
 #ifndef PERFECT_MAGIC_HASH
-
 #ifdef MINIMIZE_MAGIC
-        return
-            *(magicmoves_r_indices[sq] +
-              (((occupancy.data() & magicmoves_r_mask[sq]) *
-                magicmoves_r_magics[sq]) >> magicmoves_r_shift[sq]));
-
+            return
+                *(inst.indices[sq] +
+                  ((occupancy.data() * inst.magics[sq]) >> inst.shift[sq]));
 #else
-        return
-            magicmovesrdb[sq][((occupancy.data() & magicmoves_r_mask[sq]) *
-                                   magicmoves_r_magics[sq]) >>
-                                  MINIMAL_R_BITS_SHIFT(sq)];
+            return
+                inst.db[sq][(occupancy.data() * inst.magics[sq]) >>
+                            MINIMAL_B_BITS_SHIFT(inst, sq)];
 #endif
-
 #else
-
-        return
-            magicmovesrdb[magicmoves_r_indices[sq]
-                                              [((occupancy.data() &
-                                                 magicmoves_r_mask[sq]) *
-                                                magicmoves_r_magics[sq]) >>
-                                               MINIMAL_R_BITS_SHIFT(sq)]];
-
+            return
+                inst.db[inst.indices[sq][(occupancy.data() * inst.magics[sq]) >>
+                                    MINIMAL_B_BITS_SHIFT(inst, sq)]];
 #endif
-    }
+        }
 
-    inline BitBoard BmagicNOMASK(const Square square, const BitBoard occupancy)
-    {
-        const unsigned sq = static_cast<unsigned>(square);
+    };
+
+    class RMagic {
+        static const std::uint64_t magics[64];
+        static const std::uint64_t mask[64];
+        static const unsigned int shift[64];
+#ifndef PERFECT_MAGIC_HASH
+#ifdef MINIMIZE_MAGIC
+        BitBoard db[102400];
+        BitBoard *indices[64];
+#else //Don't Minimize database size
+        BitBoard db[64][1<<12];
+#endif //MINIMIAZE_MAGICMOVES
+#else //PERFCT_MAGIC_HASH defined
+#ifndef MINIMIZE_MAGIC
+        BitBoard db[4900];
+        PERFECT_MAGIC_HASH indices[64][1<<12];
+#else
+#error magicmoves - MINIMIZED_MAGIC and PERFECT_MAGIC_HASH \
+       cannot be used together
+#endif
+#endif //PERFCT_MAGIC_HASH
+
+        RMagic();
+
+        static const RMagic &instance() {
+            static RMagic inst_;
+            return inst_;
+        }
+
+    public:
+
+        static inline BitBoard moves(const Square square,
+                                     const BitBoard occupancy)
+        {
+            const unsigned sq = static_cast<unsigned>(square);
+            const RMagic &inst = instance();
 
 #ifndef PERFECT_MAGIC_HASH
-
 #ifdef MINIMIZE_MAGIC
-        return
-            *(magicmoves_b_indices[sq] +
-              ((occupancy.data() * magicmoves_b_magics[sq]) >>
-               magicmoves_b_shift[sq]));
-#else
-        return
-            magicmovesbdb[sq][(occupancy.data() * magicmoves_b_magics[sq]) >>
-                              MINIMAL_B_BITS_SHIFT(sq)];
-#endif
+            return
+                *(inst.indices[sq] +
+                  (((occupancy.data() & inst.mask[sq]) *
+                    inst.magics[sq]) >> inst.shift[sq]));
 
 #else
-        return
-            magicmovesbdb[magicmoves_b_indices[sq]
-                                              [(occupancy.data() *
-                                                magicmoves_b_magics[sq]) >>
-                                               MINIMAL_B_BITS_SHIFT(sq)]];
-
+            return
+                inst.db[sq][((occupancy.data() & inst.mask[sq]) *
+                             inst.magics[sq]) >>
+                            MINIMAL_R_BITS_SHIFT(inst, sq)];
 #endif
-    }
+#else
+            return
+                inst.db[inst.indices[sq][((occupancy.data() & inst.mask[sq]) *
+                                          inst.magics[sq]) >>
+                                         MINIMAL_R_BITS_SHIFT(inst, sq)]];
+#endif
+        }
 
-    inline BitBoard RmagicNOMASK(const Square square, const BitBoard occupancy)
-    {
-        const unsigned sq = static_cast<unsigned>(square);
+        static inline BitBoard moves_nomask(const Square square,
+                                            const BitBoard occupancy)
+        {
+            const unsigned sq = static_cast<unsigned>(square);
+            const RMagic &inst = instance();
 
 #ifndef PERFECT_MAGIC_HASH
-
 #ifdef MINIMIZE_MAGIC
-        return
-            *(magicmoves_r_indices[sq] +
-              ((occupancy.data() * magicmoves_r_magics[sq]) >>
-               magicmoves_r_shift[sq]));
+            return
+                *(inst.indices[sq] +
+                  ((occupancy.data() * inst.magics[sq]) >> inst.shift[sq]));
 #else
-
-        return
-            magicmovesrdb[sq][(occupancy.data() * magicmoves_r_magics[sq]) >>
-                              MINIMAL_R_BITS_SHIFT(sq)];
-
+            return
+                inst.db[sq][(occupancy.data() * inst.magics[sq]) >>
+                            MINIMAL_R_BITS_SHIFT(inst, sq)];
 #endif
-
 #else
-        return
-            magicmovesrdb[magicmoves_r_indices[sq]
-                                              [(occupancy.data() *
-                                                magicmoves_r_magics[sq]) >>
-                                               MINIMAL_R_BITS_SHIFT(sq)]];
+            return
+                inst.db[inst.indices[sq][(occupancy.data() * inst.magics[sq]) >>
+                                         MINIMAL_R_BITS_SHIFT(inst, sq)]];
 #endif
-    }
+        }
 
-    inline BitBoard Qmagic(const Square square, const BitBoard occupancy)
-    {
-        return Bmagic(square, occupancy) | Rmagic(square, occupancy);
-    }
+    };
 
-    inline BitBoard QmagicNOMASK(const Square square, const BitBoard occupancy)
-    {
-        return BmagicNOMASK(square, occupancy) |
-               RmagicNOMASK(square, occupancy);
-    }
+    class QMagic {
+    public:
 
-    void initmagicmoves();
+        static inline BitBoard moves(const Square square,
+                                     const BitBoard occupancy)
+        {
+            return BMagic::moves(square, occupancy) |
+                   RMagic::moves(square, occupancy);
+        }
+
+        inline BitBoard moves_nomask(const Square square,
+                                     const BitBoard occupancy)
+        {
+            return BMagic::moves_nomask(square, occupancy) |
+                   RMagic::moves_nomask(square, occupancy);
+        }
+
+    };
 
 } // namespace blooto
 

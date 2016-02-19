@@ -117,7 +117,7 @@ namespace blooto {
             //! Move iterator forward (remove first square)
             //! @return reference to self
             iterator &operator++() {
-                data_ &= data_ ^ (0 - data_);
+                data_ &= data_ - 1;
                 return *this;
             }
 
@@ -128,7 +128,7 @@ namespace blooto {
             //! old iterator's value.
             iterator operator++(int) {
                 iterator tmp = *this;
-                data_ &= data_ ^ (0 - data_);
+                data_ &= data_ - 1;
                 return tmp;
             }
 

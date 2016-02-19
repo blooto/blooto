@@ -5,37 +5,37 @@
  *need this functionality.
  *
  *Usage:
- *You must first initialize the generator with a call to initmagicmoves().
- *Then you can use the following macros for generating move bitboards by
- *giving them a square and an occupancy.  The macro will then "return"
- *the correct move bitboard for that particular square and occupancy. It
- *has been named Rmagic and Bmagic so that it will not conflict with
- *any functions/macros in your chess program called Rmoves/Bmoves. You
- *can macro Bmagic/Rmagic to Bmoves/Rmoves if you wish.  If you want to
+ *You can use the following static methods for generating move bitboards by
+ *giving them a square and an occupancy.  The method will then return
+ *the correct move bitboard for that particular square and occupancy.
+ *
+ *If you want to
  *minimize the size of the bitboards, make MINIMIZE_MAGIC uncommented in this
- *header (more info on this later).  Where you typedef your unsigned 64-bit
- *integer declare __64_BIT_INTEGER_DEFINED__.  If PERFECT_MAGIC_HASH is
+ *header (more info on this later).
+ *
+ *If PERFECT_MAGIC_HASH is
  *uncomment, the move generator will use an additional indrection to make the
  *table sizes smaller : (~50kb+((original size)/sizeof(PERFECT_MAGIC_HASH)).
  *The size listed from here on out are the sizes without PERFECT_MAGIC_HASH.
  *
- *Bmagic(square, occupancy)
- *Rmagic(square, occupancy)
+ *BitBoard blooto::BMagic::moves(Square square, BitBoard occupancy);
+ *BitBoard blooto::RMagic::moves(Square square, BitBoard occupancy);
  *
- *Square is an integer that is greater than or equal to zero and less than 64.
- *Occupancy is any unsigned 64-bit integer that describes which squares on
+ *Square is a Square.
+ *Occupancy is a BitBoard that describes which squares on
  *the board are occupied.
  *
- *The following macros are identical to Rmagic and Bmagic except that the
+ *The following methods are identical to blooto::RMagic::moves and
+ *blooto::BMagic::moves except that the
  *occupancy is assumed to already have been "masked".  Look at the following
  *source or read up on the internet about magic bitboard move generation to
- *understand the usage of these macros and what it means by "an occupancy that
- *has already been masked".  Using the following macros when possible might be
- *a tiny bit faster than using Rmagic and Bmagic because it avoids an array
- *access and a 64-bit & operation.
+ *understand the usage of these methods and what it means by "an occupancy that
+ *has already been masked".  Using the following methods when possible might be
+ *a tiny bit faster than using blooto::RMagic::moves and blooto::BMagic::moves
+ *because *it avoids an array access and a 64-bit & operation.
  *
- *BmagicNOMASK(square, occupancy)
- *RmagicNOMASK(square, occupancy)
+ *BitBoard blooto::BMagic::moves_nomask(Square square, BitBoard occupancy);
+ *BitBoard blooto::RMagic::moves_nomask(Square square, BitBoard occupancy);
  *
  *If MINIMIZE_MAGIC is defined before including this file:
  *The move bitboard generator will use up 841kb of memory.

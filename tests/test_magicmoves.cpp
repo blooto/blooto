@@ -21,7 +21,7 @@
 #define BOOST_TEST_MODULE test_magicmoves
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE(test_magicmoves) {
+BOOST_AUTO_TEST_CASE(test_rmagic) {
     using namespace blooto;
     BitBoard bb1{RMagic::moves(Square::A1, {})};
     BitBoard bb1e{
@@ -57,6 +57,10 @@ BOOST_AUTO_TEST_CASE(test_magicmoves) {
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(bb4.begin(), bb4.end(),
                                   bb4e.begin(), bb4e.end());
+}
+
+BOOST_AUTO_TEST_CASE(test_bmagic) {
+    using namespace blooto;
     BitBoard bb5{BMagic::moves(Square::A1, {})};
     BitBoard bb5e{
         Square::B2 | Square::C3 | Square::D4 | Square::E5 |

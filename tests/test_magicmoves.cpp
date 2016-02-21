@@ -20,10 +20,19 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE test_magicmoves
 #include <boost/test/unit_test.hpp>
+#include <boost/test/test_case_template.hpp>
+#include <boost/mpl/list.hpp>
 
-BOOST_AUTO_TEST_CASE(test_rmagic) {
+using RImplTypes = boost::mpl::list<
+    blooto::RMagicMin,
+    blooto::RMagicFast,
+    blooto::RMagicPerfectHash,
+    blooto::RMagicPerfectHashVarShift
+>;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(test_rmagic, Impl, RImplTypes) {
     using namespace blooto;
-    BitBoard bb1{RMagic::moves(Square::A1, {})};
+    BitBoard bb1{RMagic<Impl>::moves(Square::A1, {})};
     BitBoard bb1e{
         Square::A2 | Square::A3 | Square::A4 | Square::A5 |
         Square::A6 | Square::A7 | Square::A8 |
@@ -32,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_rmagic) {
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(bb1.begin(), bb1.end(),
                                   bb1e.begin(), bb1e.end());
-    BitBoard bb2{RMagic::moves(Square::A1, {Square::A2 | Square::B2})};
+    BitBoard bb2{RMagic<Impl>::moves(Square::A1, {Square::A2 | Square::B2})};
     BitBoard bb2e{
         Square::A2 |
         Square::B1 | Square::C1 | Square::D1 | Square::E1 |
@@ -40,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_rmagic) {
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(bb2.begin(), bb2.end(),
                                   bb2e.begin(), bb2e.end());
-    BitBoard bb3{RMagic::moves(Square::D3, {})};
+    BitBoard bb3{RMagic<Impl>::moves(Square::D3, {})};
     BitBoard bb3e{
         Square::D1 | Square::D2 | Square::D4 | Square::D5 |
         Square::D6 | Square::D7 | Square::D8 |
@@ -49,7 +58,7 @@ BOOST_AUTO_TEST_CASE(test_rmagic) {
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(bb3.begin(), bb3.end(),
                                   bb3e.begin(), bb3e.end());
-    BitBoard bb4{RMagic::moves(Square::D3, {Square::D5 | Square::F3})};
+    BitBoard bb4{RMagic<Impl>::moves(Square::D3, {Square::D5 | Square::F3})};
     BitBoard bb4e{
         Square::D1 | Square::D2 | Square::D4 | Square::D5 |
         Square::A3 | Square::B3 | Square::C3 | Square::E3 |
@@ -59,20 +68,27 @@ BOOST_AUTO_TEST_CASE(test_rmagic) {
                                   bb4e.begin(), bb4e.end());
 }
 
-BOOST_AUTO_TEST_CASE(test_bmagic) {
+using BImplTypes = boost::mpl::list<
+    blooto::BMagicMin,
+    blooto::BMagicFast,
+    blooto::BMagicPerfectHash,
+    blooto::BMagicPerfectHashVarShift
+>;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(test_bmagic, Impl, BImplTypes) {
     using namespace blooto;
-    BitBoard bb5{BMagic::moves(Square::A1, {})};
+    BitBoard bb5{BMagic<Impl>::moves(Square::A1, {})};
     BitBoard bb5e{
         Square::B2 | Square::C3 | Square::D4 | Square::E5 |
         Square::F6 | Square::G7 | Square::H8
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(bb5.begin(), bb5.end(),
                                   bb5e.begin(), bb5e.end());
-    BitBoard bb6{BMagic::moves(Square::A1, BitBoard{Square::C3})};
+    BitBoard bb6{BMagic<Impl>::moves(Square::A1, BitBoard{Square::C3})};
     BitBoard bb6e{Square::B2 | Square::C3};
     BOOST_CHECK_EQUAL_COLLECTIONS(bb6.begin(), bb6.end(),
                                   bb6e.begin(), bb6e.end());
-    BitBoard bb7{BMagic::moves(Square::D3, {})};
+    BitBoard bb7{BMagic<Impl>::moves(Square::D3, {})};
     BitBoard bb7e{
         Square::B1 | Square::C2 | /* D3 */
         Square::E4 | Square::F5 | Square::G6 | Square::H7 |
@@ -81,7 +97,7 @@ BOOST_AUTO_TEST_CASE(test_bmagic) {
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(bb7.begin(), bb7.end(),
                                   bb7e.begin(), bb7e.end());
-    BitBoard bb8{BMagic::moves(Square::D3, {Square::F5 | Square::B5})};
+    BitBoard bb8{BMagic<Impl>::moves(Square::D3, {Square::F5 | Square::B5})};
     BitBoard bb8e{
         Square::B1 | Square::C2 | /* D3 */
         Square::E4 | Square::F5 | /* ... */

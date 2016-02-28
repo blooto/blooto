@@ -352,8 +352,8 @@ namespace blooto {
             return BMagic<BMagicImpl>::moves(square, occupancy) |
                    RMagic<RMagicImpl>::moves(square, occupancy);
         }
-        inline BitBoard moves_nomask(const Square square,
-                                     const BitBoard occupancy)
+        static inline BitBoard moves_nomask(const Square square,
+                                            const BitBoard occupancy)
         {
             return BMagic<BMagicImpl>::moves_nomask(square, occupancy) |
                    RMagic<RMagicImpl>::moves_nomask(square, occupancy);

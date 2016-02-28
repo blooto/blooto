@@ -87,6 +87,14 @@ namespace blooto {
             return *this;
         }
 
+        //! Add Square to BitBoard
+        //! @param rhs another BitBoard
+        //! @return reference to self
+        BitBoard &operator|=(Square rhs) {
+            data_ |= BitBoard(rhs).data_;
+            return *this;
+        }
+
         //! Intersect BitBoard with another one
         //! @param rhs another BitBoard
         //! @return reference to self

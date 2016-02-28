@@ -1,5 +1,6 @@
 find_package(Boost 1.47.0 COMPONENTS unit_test_framework REQUIRED)
-set(TESTS test_bitscan test_square test_bitboard test_magicmoves test_piecetype)
+set(TESTS test_bitscan test_square test_bitboard test_magicmoves test_piecetype
+          test_colour)
 include_directories(${blooto_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 link_directories(${blooto_BINARY_DIR})
 foreach(test ${TESTS})

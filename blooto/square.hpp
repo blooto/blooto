@@ -17,7 +17,7 @@
 #define _BLOOTO_SQUARE_HPP
 
 #include <cstdint>
-#include <ostream>
+#include <iostream>
 
 namespace blooto {
 
@@ -34,6 +34,35 @@ namespace blooto {
         A7, B7, C7, D7, E7, F7, G7, H7,
         A8, B8, C8, D8, E8, F8, G8, H8
     };
+
+    //! Input square's name from input stream
+    //! @param in input stream
+    //! @param sq square
+    //! @return reference to output stream for operator chaining
+    template<typename CharT, typename CharTraits>
+    std::basic_istream<CharT, CharTraits> &
+    operator>>(std::basic_istream<CharT, CharTraits> &in, Square &sq)
+    {
+        if (!in.good())
+            return in;
+        CharT file_ch;
+        if (!in.get(file_ch))
+            return in;
+        if (file_ch < CharT{'a'} || file_ch > CharT{'h'}) {
+            in.setstate(std::basic_istream<CharT, CharTraits>::failbit);
+            return in;
+        }
+        CharT rank_ch;
+        if (!in.get(rank_ch))
+            return in;
+        if (rank_ch < CharT{'1'} || rank_ch > CharT{'8'}) {
+            in.setstate(std::basic_istream<CharT, CharTraits>::failbit);
+            return in;
+        }
+        sq = Square((std::uint8_t((rank_ch - CharT{'1'}) & 7) << 3) |
+                    (std::uint8_t((file_ch - CharT{'a'}) & 7)));
+        return in;
+    }
 
     //! Output square's name to output stream
     //! @param out output stream

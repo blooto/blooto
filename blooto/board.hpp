@@ -166,6 +166,10 @@ namespace blooto {
                 return &board_ != &rhs.board_ || iter_ != rhs.iter_;
             }
 
+            //! Return reference to the board this iterator iterates over
+            //! @return reference to the iterator's board
+            constexpr const Board &board() const {return board_;}
+
         };
 
         //! Make iterator pointing to a piece at the first occupied square

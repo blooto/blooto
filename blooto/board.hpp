@@ -118,7 +118,7 @@ namespace blooto {
         }
 
         //! Iterator to traverse pieces on the board
-        class iterator: std::iterator<std::forward_iterator_tag, Piece> {
+        class iterator: public std::iterator<std::forward_iterator_tag, Piece> {
             const Board &board_;
             BitBoard::iterator iter_;
 

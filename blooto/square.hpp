@@ -35,6 +35,27 @@ namespace blooto {
         A8, B8, C8, D8, E8, F8, G8, H8
     };
 
+    //! Square's integer representation
+    //! @param square square to get representation from
+    //! @return integer representation of given square
+    constexpr std::uint8_t code(Square square) {
+        return static_cast<std::uint8_t>(square);
+    }
+
+    //! Square's rank in integer representation
+    //! @param square square to get rank from
+    //! @return rank of the square
+    constexpr std::uint8_t rank(Square square) {
+        return (code(square) >> 3) & 7;
+    }
+
+    //! Square's file in integer representation
+    //! @param square square to get file from
+    //! @return file of the square
+    constexpr std::uint8_t file(Square square) {
+        return code(square) & 7;
+    }
+
     //! Input square's name from input stream
     //! @param in input stream
     //! @param sq square
@@ -80,8 +101,7 @@ namespace blooto {
             CharT{'a'}, CharT{'b'}, CharT{'c'}, CharT{'d'},
             CharT{'e'}, CharT{'f'}, CharT{'g'}, CharT{'h'}
         };
-        unsigned d = static_cast<unsigned>(sq);
-        return out << files[d & 7] << ranks[(d >> 3) & 7];
+        return out << files[file(sq)] << ranks[rank(sq)];
     }
 
 }

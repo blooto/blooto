@@ -204,6 +204,59 @@ namespace blooto {
         //! @return true if board contains no pieces that can move
         bool can_move_empty() const {return can_move_.empty();}
 
+        //! Proxy class representing sequence of pieces that can move.
+        //! The main purpose of this class is to be returned by
+        //! Board::can_move() method.
+        //! Can be used like this:
+        //! @code
+        //! Board b;
+        //! ...
+        //! for (auto piece: b.can_move()) {
+        //!     ...
+        //! }
+        //! @endcode
+        class CanMove {
+            const Board &board_;
+
+        public:
+
+            //! Construct proxy object from board
+            //! @param board board to proxy
+            constexpr CanMove(const Board &board): board_{board} {}
+
+            //! Access board
+            //! @return board this object proxies
+            constexpr const Board &board() const {return board_;}
+
+            //! Make iterator pointing to the first piece that can move
+            //! @return new iterator
+            iterator begin() const {
+                return board_.can_move_begin();
+            }
+
+            //! Make iterator pointing after the last piece that can move
+            //! @return new iterator
+            iterator end() const {
+                return board_.can_move_end();
+            }
+
+            //! Check that there are no pieces that can move
+            //! @return true if board contains no pieces that can move
+            bool empty() const {return board_.can_move_empty();}
+
+        };
+
+        //! Create proxy object representing sequence of pieces that can move.
+        //! Can be used like this:
+        //! @code
+        //! Board b;
+        //! ...
+        //! for (auto piece: b.can_move()) {
+        //!     ...
+        //! }
+        //! @endcode
+        CanMove can_move() const {return CanMove{*this};}
+
     };
 
 }

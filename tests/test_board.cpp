@@ -44,6 +44,10 @@ BOOST_AUTO_TEST_CASE(test_board) {
     BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move_begin(), board.can_move_end(),
                                   pieces_can_move.begin(),
                                   pieces_can_move.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move().begin(),
+                                  board.can_move().end(),
+                                  pieces_can_move.begin(),
+                                  pieces_can_move.end());
     board.insert(Piece{Square::E2, RookType::instance, ColourBlack()});
     BOOST_CHECK(!board.empty());
     std::initializer_list<Piece> pieces2{
@@ -55,6 +59,10 @@ BOOST_AUTO_TEST_CASE(test_board) {
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces2.begin(), pieces2.end());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move_begin(), board.can_move_end(),
+                                  pieces_can_move.begin(),
+                                  pieces_can_move.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move().begin(),
+                                  board.can_move().end(),
                                   pieces_can_move.begin(),
                                   pieces_can_move.end());
     BOOST_CHECK_EQUAL(board[Square::B1],

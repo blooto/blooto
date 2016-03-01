@@ -45,6 +45,15 @@ BOOST_AUTO_TEST_CASE(test_piececolour) {
     BOOST_CHECK(pcb.friendly_or_neutral(pcn));
     BOOST_CHECK(!pcb.friendly_or_neutral(pcw));
     BOOST_CHECK(pcb.friendly_or_neutral(pcb));
+    PieceColour pc1{pcn};
+    BOOST_CHECK_EQUAL(pc1, ColourNeutral());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(pc1), "neutral");
+    pc1 = pcw;
+    BOOST_CHECK_EQUAL(pc1, ColourWhite());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(pc1), "white");
+    pc1 = ColourBlack();
+    BOOST_CHECK_EQUAL(pc1, ColourBlack());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(pc1), "black");
 }
 
 BOOST_AUTO_TEST_CASE(test_movecolour) {
@@ -76,4 +85,13 @@ BOOST_AUTO_TEST_CASE(test_movecolour) {
     BOOST_CHECK(mcb.can_move(pcn));
     BOOST_CHECK(!mcb.can_move(pcw));
     BOOST_CHECK(mcb.can_move(pcb));
+    MoveColour mc1{mcw};
+    BOOST_CHECK_EQUAL(mc1, ColourWhite());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(mc1), "white");
+    mc1 = mcb;
+    BOOST_CHECK_EQUAL(mc1, ColourBlack());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(mc1), "black");
+    mc1 = ColourWhite();
+    BOOST_CHECK_EQUAL(mc1, ColourWhite());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(mc1), "white");
 }

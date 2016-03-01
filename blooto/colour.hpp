@@ -132,6 +132,14 @@ namespace blooto {
         //! @param other object to construct from
         PieceColour(PieceColour &&other) = default;
 
+        //! Default copy assignment
+        //! @param other piece colour to assign
+        PieceColour &operator=(const PieceColour &other) = default;
+
+        //! Default move assignment
+        //! @param other piece colour to assign
+        PieceColour &operator=(PieceColour &&other) = default;
+
         //! Check for other piece's friendliness.
         //! @param c colour of other piece
         //! @return true if other piece is friendly or neutral, false otherwise
@@ -191,6 +199,14 @@ namespace blooto {
         //! Default move constructor
         //! @param other object to construct from
         MoveColour(MoveColour &&other) = default;
+
+        //! Default copy assignment
+        //! @param other move colour to assign
+        MoveColour &operator=(const MoveColour &other) = default;
+
+        //! Default move assignment
+        //! @param other move colour to assign
+        MoveColour &operator=(MoveColour &&other) = default;
 
         //! Opposite move colour.
         //! @return colour opposite to this one

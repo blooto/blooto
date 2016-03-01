@@ -153,11 +153,16 @@ namespace blooto {
         }
 
         //! Iterator to traverse pieces on the board
-        class iterator: public std::iterator<std::forward_iterator_tag, Piece> {
+        class iterator {
             const Board &board_;
             BitBoard::iterator iter_;
 
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = Piece;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type *;
+            using reference = value_type &;
 
             //! Construct iterator
             //! @param board board this iterator iterates over
@@ -281,12 +286,17 @@ namespace blooto {
         CanMove can_move() const {return CanMove{*this};}
 
         //! Iterator over all possible (semi-legal) moves on the board
-        class moves_iterator:
-        public std::iterator<std::forward_iterator_tag, Move> {
+        class moves_iterator {
             Board::iterator piece_iter_;
             BitBoard::iterator move_iter_;
 
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = Move;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type *;
+            using reference = value_type &;
+
             //! Tag for constructing move_iterator pointing to begin of moves
             struct begin {};
 

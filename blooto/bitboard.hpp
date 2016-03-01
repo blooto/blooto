@@ -104,11 +104,15 @@ namespace blooto {
         }
 
         //! Iterator to traverse all squares in BitBoard
-        class iterator: public std::iterator<std::forward_iterator_tag, Square>
-        {
+        class iterator {
             data_type data_;
 
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = Square;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type *;
+            using reference = value_type &;
 
             //! Construct empty iterator with no more squares left.
             constexpr iterator(): data_(0ULL) {}

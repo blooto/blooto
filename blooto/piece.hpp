@@ -23,6 +23,7 @@
 #include <blooto/square.hpp>
 #include <blooto/piecetype.hpp>
 #include <blooto/colour.hpp>
+#include <blooto/bitboard.hpp>
 
 namespace blooto {
 
@@ -84,6 +85,14 @@ namespace blooto {
                 &piecetype_ != &rhs.piecetype_ ||
                 colour_ != rhs.colour_;
         }
+
+        //! All possible moves by this piece for given occupancy
+        //! @param occupancy BitBoard containing occipoed squares
+        //! @return BitBoard containing squares this piece can move to
+        BitBoard moves(BitBoard occupancy) const {
+            return piecetype_.moves(square_, occupancy);
+        }
+
         //! Output piece to output stream
         //! @param out output stream
         //! @param p piece to output

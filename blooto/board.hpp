@@ -369,6 +369,50 @@ namespace blooto {
         //! @return true if board has no possible pseudo-legal moves
         bool moves_empty() const {return moves_begin() == moves_end();}
 
+        //! Proxy class representing sequence of possible pseudo-legal moves.
+        //! The main purpose of this class is to be returned by
+        //! Board::moves() method.
+        //! Can be used like this:
+        //! @code
+        //! Board b;
+        //! ...
+        //! for (auto move: b.moves()) {
+        //!     ...
+        //! }
+        //! @endcode
+        struct Moves: Proxy {
+
+            //! Iterator type
+            using iterator = Board::moves_iterator;
+
+            //! Construct proxy object from board
+            using Proxy::Proxy;
+
+            //! Make iterator pointing to the first possible pseudo-legal move
+            //! @return new iterator
+            iterator begin() const {return board().moves_begin();}
+
+            //! Make iterator pointing after the last possible pseudo-legal move
+            //! @return new iterator
+            iterator end() const {return board().moves_end();}
+
+            //! Check that there are no possible pseudo-legal moves
+            //! @return true if board has no possible pseudo-legal moves
+            bool empty() const {return board().moves_empty();}
+
+        };
+
+        //! Create proxy object representing sequence of pseudo-legal moves.
+        //! Can be used like this:
+        //! @code
+        //! Board b;
+        //! ...
+        //! for (auto move: b.moves()) {
+        //!     ...
+        //! }
+        //! @endcode
+        Moves moves() const {return Moves{*this};}
+
     };
 
 }

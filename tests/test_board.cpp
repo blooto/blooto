@@ -33,10 +33,17 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {Square::D3, BishopType::instance, ColourWhite()},
         {Square::F5, BishopType::instance, ColourBlack()},
     };
+    std::initializer_list<Piece> pieces_can_move{
+        {Square::B1, BishopType::instance, ColourNeutral()},
+        {Square::D3, BishopType::instance, ColourWhite()},
+    };
     Board board{pieces};
     BOOST_CHECK(!board.empty());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces.begin(), pieces.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move_begin(), board.can_move_end(),
+                                  pieces_can_move.begin(),
+                                  pieces_can_move.end());
     board.insert(Piece{Square::E2, RookType::instance, ColourBlack()});
     BOOST_CHECK(!board.empty());
     std::initializer_list<Piece> pieces2{
@@ -47,6 +54,9 @@ BOOST_AUTO_TEST_CASE(test_board) {
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces2.begin(), pieces2.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move_begin(), board.can_move_end(),
+                                  pieces_can_move.begin(),
+                                  pieces_can_move.end());
     BOOST_CHECK_EQUAL(board[Square::B1],
                       (Piece{Square::B1,
                              BishopType::instance, 

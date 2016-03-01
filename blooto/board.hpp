@@ -188,6 +188,22 @@ namespace blooto {
         //! @return true if board contains no pieces
         bool empty() const {return occupied_.empty();}
 
+        //! Make iterator pointing to the first piece that can move
+        //! @return new iterator
+        iterator can_move_begin() const {
+            return iterator(*this, can_move_.begin());
+        }
+
+        //! Make iterator pointing after the last piece that can move
+        //! @return new iterator
+        iterator can_move_end() const {
+            return iterator(*this, can_move_.end());
+        }
+
+        //! Check that there are no pieces that can move
+        //! @return true if board contains no pieces that can move
+        bool can_move_empty() const {return can_move_.empty();}
+
     };
 
 }

@@ -61,6 +61,13 @@ namespace blooto {
             }
         };
 
+        class Proxy {
+            const Board &board_;
+        public:
+            constexpr Proxy(const Board &board): board_{board} {}
+            constexpr const Board &board() const {return board_;}
+        };
+
         MoveColour colour_;
         std::array<std::uint8_t, 64> pieces_;
         BitBoard occupied_;
@@ -215,34 +222,22 @@ namespace blooto {
         //!     ...
         //! }
         //! @endcode
-        class CanMove {
-            const Board &board_;
-
-        public:
+        struct CanMove: Proxy {
 
             //! Construct proxy object from board
-            //! @param board board to proxy
-            constexpr CanMove(const Board &board): board_{board} {}
-
-            //! Access board
-            //! @return board this object proxies
-            constexpr const Board &board() const {return board_;}
+            using Proxy::Proxy;
 
             //! Make iterator pointing to the first piece that can move
             //! @return new iterator
-            iterator begin() const {
-                return board_.can_move_begin();
-            }
+            iterator begin() const {return board().can_move_begin();}
 
             //! Make iterator pointing after the last piece that can move
             //! @return new iterator
-            iterator end() const {
-                return board_.can_move_end();
-            }
+            iterator end() const {return board().can_move_end();}
 
             //! Check that there are no pieces that can move
             //! @return true if board contains no pieces that can move
-            bool empty() const {return board_.can_move_empty();}
+            bool empty() const {return board().can_move_empty();}
 
         };
 

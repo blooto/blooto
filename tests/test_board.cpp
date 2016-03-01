@@ -156,4 +156,30 @@ BOOST_AUTO_TEST_CASE(test_board) {
                       (Piece{Square::F5,
                           BishopType::instance,
                        ColourWhite()}));
+    board.flip_colour();
+    std::initializer_list<Move> moves4{
+        {BishopType::instance, Square::B1, Square::A2},
+        {BishopType::instance, Square::B1, Square::C2},
+        {BishopType::instance, Square::B1, Square::D3},
+        {BishopType::instance, Square::B1, Square::E4},
+        {BishopType::instance, Square::B1, Square::F5, true},
+        {RookType::instance, Square::E2, Square::E1},
+        {RookType::instance, Square::E2, Square::A2},
+        {RookType::instance, Square::E2, Square::B2},
+        {RookType::instance, Square::E2, Square::C2},
+        {RookType::instance, Square::E2, Square::D2},
+        {RookType::instance, Square::E2, Square::F2},
+        {RookType::instance, Square::E2, Square::G2},
+        {RookType::instance, Square::E2, Square::H2},
+        {RookType::instance, Square::E2, Square::E3},
+        {RookType::instance, Square::E2, Square::E4},
+        {RookType::instance, Square::E2, Square::E5},
+        {RookType::instance, Square::E2, Square::E6},
+        {RookType::instance, Square::E2, Square::E7},
+        {RookType::instance, Square::E2, Square::E8},
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.moves_begin(), board.moves_end(),
+                                  moves4.begin(), moves4.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.moves().begin(), board.moves().end(),
+                                  moves4.begin(), moves4.end());
 }

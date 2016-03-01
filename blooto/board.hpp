@@ -143,6 +143,15 @@ namespace blooto {
             return attacked;
         }
 
+        //! Flip board colour
+        void flip_colour() {
+            colour_ = colour_.opposite();
+            const BitBoard old_friendlies = friendlies_;
+            const BitBoard old_can_move = can_move_;
+            friendlies_ = occupied_ & ~old_can_move;
+            can_move_ = occupied_ & ~old_friendlies;
+        }
+
         //! Iterator to traverse pieces on the board
         class iterator: public std::iterator<std::forward_iterator_tag, Piece> {
             const Board &board_;

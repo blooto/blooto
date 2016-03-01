@@ -75,6 +75,28 @@ namespace blooto {
         //! @return true is the move is attack
         constexpr bool attack() const {return attack_;}
 
+        //! Compare with other move for equality
+        //! @param rhs other move
+        //! @return true if both moves are equal
+        bool operator==(const Move &rhs) const {
+            return
+                &piecetype_ == &rhs.piecetype_ &&
+                from_ == rhs.from_ &&
+                to_ == rhs.to_ &&
+                attack_ == rhs.attack_;
+        }
+
+        //! Compare with other move for inequality
+        //! @param rhs other move
+        //! @return true if both moves are not equal
+        bool operator!=(const Move &rhs) const {
+            return
+                &piecetype_ != &rhs.piecetype_ ||
+                from_ != rhs.from_ ||
+                to_ != rhs.to_ ||
+                attack_ != rhs.attack_;
+        }
+
         //! Output move to output stream
         //! @param out output stream
         //! @param move move to output

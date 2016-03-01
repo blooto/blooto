@@ -115,4 +115,45 @@ BOOST_AUTO_TEST_CASE(test_board) {
                       (Piece{Square::F5,
                              BishopType::instance,
                              ColourBlack()}));
+    BOOST_CHECK_EQUAL(board.make_move({BishopType::instance, Square::D3,
+                                       Square::F5, true}),
+                      &BishopType::instance);
+    std::initializer_list<Piece> pieces3{
+        {Square::B1, BishopType::instance, ColourNeutral()},
+        {Square::E2, RookType::instance, ColourBlack()},
+        {Square::F5, BishopType::instance, ColourWhite()},
+    };
+    std::initializer_list<Move> moves3{
+        {BishopType::instance, Square::B1, Square::A2},
+        {BishopType::instance, Square::B1, Square::C2},
+        {BishopType::instance, Square::B1, Square::D3},
+        {BishopType::instance, Square::B1, Square::E4},
+        {BishopType::instance, Square::F5, Square::B1, true},
+        {BishopType::instance, Square::F5, Square::C2},
+        {BishopType::instance, Square::F5, Square::D3},
+        {BishopType::instance, Square::F5, Square::H3},
+        {BishopType::instance, Square::F5, Square::E4},
+        {BishopType::instance, Square::F5, Square::G4},
+        {BishopType::instance, Square::F5, Square::E6},
+        {BishopType::instance, Square::F5, Square::G6},
+        {BishopType::instance, Square::F5, Square::D7},
+        {BishopType::instance, Square::F5, Square::H7},
+        {BishopType::instance, Square::F5, Square::C8},
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.moves_begin(), board.moves_end(),
+                                  moves3.begin(), moves3.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.moves().begin(), board.moves().end(),
+                                  moves3.begin(), moves3.end());
+    BOOST_CHECK_EQUAL(board[Square::B1],
+                      (Piece{Square::B1,
+                          BishopType::instance,
+                       ColourNeutral()}));
+    BOOST_CHECK_EQUAL(board[Square::E2],
+                      (Piece{Square::E2,
+                          RookType::instance,
+                       ColourBlack()}));
+    BOOST_CHECK_EQUAL(board[Square::F5],
+                      (Piece{Square::F5,
+                          BishopType::instance,
+                       ColourWhite()}));
 }

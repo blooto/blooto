@@ -125,6 +125,24 @@ namespace blooto {
                          colour_.opposite().to_piece_colour());
         }
 
+        //! Move a piece on this board
+        //! @param move move to apply
+        //! @return pointer to type of piece being attacked or nullptr
+        const PieceType *make_move(const Move &move) {
+            const PieceType *attacked = piecetypes[pieces_[code(move.to())]];
+            pieces_[code(move.to())] = pieces_[code(move.from())];
+            pieces_[code(move.from())] = 0;
+            occupied_ |= move.to();
+            occupied_ &= ~move.from();
+            can_move_ |= move.to();
+            can_move_ &= ~move.from();
+            if (friendlies_[move.from()]) {
+                friendlies_ |= move.to();
+                friendlies_ &= ~move.from();
+            }
+            return attacked;
+        }
+
         //! Iterator to traverse pieces on the board
         class iterator: public std::iterator<std::forward_iterator_tag, Piece> {
             const Board &board_;

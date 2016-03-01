@@ -30,6 +30,7 @@
 #include <blooto/queentype.hpp>
 #include <blooto/piece.hpp>
 #include <blooto/colour.hpp>
+#include <blooto/move.hpp>
 
 namespace blooto {
 
@@ -251,6 +252,122 @@ namespace blooto {
         //! }
         //! @endcode
         CanMove can_move() const {return CanMove{*this};}
+
+        //! Iterator over all possible (semi-legal) moves on the board
+        class moves_iterator:
+        public std::iterator<std::forward_iterator_tag, Move> {
+            Board::iterator piece_iter_;
+            BitBoard::iterator move_iter_;
+
+        public:
+            //! Tag for constructing move_iterator pointing to begin of moves
+            struct begin {};
+
+            //! Tag for constructing move_iterator pointing after end of moves
+            struct end {};
+
+            //! Construct move_iterator pointing to the first move
+            //! @param board board ths iterator iterates over
+            moves_iterator(const Board &board, begin)
+            : piece_iter_{board.can_move_begin()}
+            , move_iter_{
+                board.can_move_empty() ?
+                BitBoard::iterator() :
+                ((*piece_iter_).moves(board.occupied_) &
+                 ~board.friendlies_).begin()
+              }
+            {
+                while (piece_iter_ != board.can_move_end() &&
+                       move_iter_ == BitBoard::iterator())
+                {
+                    ++piece_iter_;
+                    if (piece_iter_ == board.can_move_end())
+                        break;
+                    move_iter_ =
+                        ((*piece_iter_).moves(board.occupied_) &
+                         ~board.friendlies_).begin();
+                }
+            }
+
+            //! Construct move_iterator pointing after the last move
+            //! @param board board ths iterator iterates over
+            moves_iterator(const Board &board, end)
+            : piece_iter_{board.can_move_end()}
+            , move_iter_{BitBoard::iterator()}
+            {
+            }
+
+            //! Move this iterator points to
+            //! @return move
+            Move operator*() const {
+                Piece p{*piece_iter_};
+                Square to{*move_iter_};
+                return Move{p.piecetype(), p.square(), to,
+                            piece_iter_.board().occupied_[to]};
+            }
+
+            //! Move iterator forward
+            //! @return reference to self
+            moves_iterator &operator++() {
+                const Board &board = piece_iter_.board();
+                ++move_iter_;
+                while (move_iter_ == BitBoard::iterator()) {
+                    ++piece_iter_;
+                    if (piece_iter_ == board.can_move_end())
+                        break;
+                    move_iter_ =
+                        ((*piece_iter_).moves(board.occupied_) &
+                         ~board.friendlies_).begin();
+                }
+                return *this;
+            }
+
+            //! Move iterator forward
+            //! @return old value of self
+            //! This is post-increment operator,
+            //! moving iterator forward, but returning
+            //! old iterator's value.
+            moves_iterator operator++(int) {
+                moves_iterator tmp{*this};
+                ++*this;
+                return tmp;
+            }
+
+            //! Compare iterator with another one
+            //! @param rhs another iterator
+            //! @return true is iterators are equal
+            bool operator==(moves_iterator rhs) const {
+                return
+                    piece_iter_ == rhs.piece_iter_ &&
+                    move_iter_ == rhs.move_iter_;
+            }
+
+            //! Compare iterator with another one
+            //! @param rhs another iterator
+            //! @return true is iterators are not equal
+            bool operator!=(moves_iterator rhs) const {
+                return
+                    piece_iter_ != rhs.piece_iter_ ||
+                    move_iter_ != rhs.move_iter_;
+            }
+
+        };
+
+        //! Make iterator pointing to the first possible pseudo-legal move
+        //! @return new iterator
+        moves_iterator moves_begin() const {
+            return moves_iterator(*this, moves_iterator::begin());
+        }
+
+        //! Make iterator pointing after the last possible pseudo-legal move
+        //! @return new iterator
+        moves_iterator moves_end() const {
+            return moves_iterator(*this, moves_iterator::end());
+        }
+
+        //! Check that there are no mossible pseudo-legal moves
+        //! @return true if board has no possible pseudo-legal moves
+        bool moves_empty() const {return moves_begin() == moves_end();}
 
     };
 

@@ -21,6 +21,7 @@
 #include <blooto/bishoptype.hpp>
 #include <blooto/rooktype.hpp>
 #include <blooto/queentype.hpp>
+#include <blooto/move.hpp>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE test_board
@@ -48,6 +49,21 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.can_move().end(),
                                   pieces_can_move.begin(),
                                   pieces_can_move.end());
+    std::initializer_list<Move> moves1{
+        {BishopType::instance, Square::B1, Square::A2},
+        {BishopType::instance, Square::B1, Square::C2},
+        {BishopType::instance, Square::D3, Square::B1, true},
+        {BishopType::instance, Square::D3, Square::F1},
+        {BishopType::instance, Square::D3, Square::C2},
+        {BishopType::instance, Square::D3, Square::E2},
+        {BishopType::instance, Square::D3, Square::C4},
+        {BishopType::instance, Square::D3, Square::E4},
+        {BishopType::instance, Square::D3, Square::B5},
+        {BishopType::instance, Square::D3, Square::F5, true},
+        {BishopType::instance, Square::D3, Square::A6},
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.moves_begin(), board.moves_end(),
+                                  moves1.begin(), moves1.end());
     board.insert(Piece{Square::E2, RookType::instance, ColourBlack()});
     BOOST_CHECK(!board.empty());
     std::initializer_list<Piece> pieces2{
@@ -65,6 +81,20 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.can_move().end(),
                                   pieces_can_move.begin(),
                                   pieces_can_move.end());
+    std::initializer_list<Move> moves2{
+        {BishopType::instance, Square::B1, Square::A2},
+        {BishopType::instance, Square::B1, Square::C2},
+        {BishopType::instance, Square::D3, Square::B1, true},
+        {BishopType::instance, Square::D3, Square::C2},
+        {BishopType::instance, Square::D3, Square::E2, true},
+        {BishopType::instance, Square::D3, Square::C4},
+        {BishopType::instance, Square::D3, Square::E4},
+        {BishopType::instance, Square::D3, Square::B5},
+        {BishopType::instance, Square::D3, Square::F5, true},
+        {BishopType::instance, Square::D3, Square::A6},
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.moves_begin(), board.moves_end(),
+                                  moves2.begin(), moves2.end());
     BOOST_CHECK_EQUAL(board[Square::B1],
                       (Piece{Square::B1,
                              BishopType::instance, 

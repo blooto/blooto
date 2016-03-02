@@ -56,6 +56,14 @@ namespace blooto {
         return code(square) & 7;
     }
 
+    //! Return square for given file and rank
+    //! @param file square's file
+    //! @param rank square's rank
+    //! @return resulting square
+    constexpr Square square(std::uint8_t file, std::uint8_t rank) {
+        return Square((std::uint8_t(rank & 7) << 3) | std::uint8_t(file & 7));
+    }
+
     //! Input square's name from input stream
     //! @param in input stream
     //! @param sq square

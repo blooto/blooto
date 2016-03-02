@@ -286,8 +286,8 @@ namespace blooto {
         //! Iterator over all possible (semi-legal) moves on the board
         class moves_iterator {
             const Board &board_;
-            BitBoard::iterator piece_iter_;
-            BitBoard::iterator move_iter_;
+            BitBoard::iterator from_iter_;
+            BitBoard::iterator to_iter_;
 
         public:
             using iterator_category = std::forward_iterator_tag;
@@ -305,38 +305,38 @@ namespace blooto {
             //! Construct move_iterator pointing to the first move
             //! @param board board ths iterator iterates over
             moves_iterator(const Board &board, begin)
-            : board_{board}, piece_iter_{board.can_move().begin()}
+            : board_{board}, from_iter_{board.can_move().begin()}
             {
-                while (piece_iter_ != board.can_move().end()) {
-                    BitBoard moves = board.moves_from(*piece_iter_);
+                while (from_iter_ != board.can_move().end()) {
+                    BitBoard moves = board.moves_from(*from_iter_);
                     if (!moves.empty()) {
-                        move_iter_ = moves.begin();
+                        to_iter_ = moves.begin();
                         break;
                     }
-                    ++piece_iter_;
+                    ++from_iter_;
                 }
             }
 
             //! Construct move_iterator pointing after the last move
             //! @param board board ths iterator iterates over
             moves_iterator(const Board &board, end)
-            : board_{board}, piece_iter_{board.can_move().end()} {}
+            : board_{board}, from_iter_{board.can_move().end()} {}
 
             //! Move this iterator points to
             //! @return move
             Move operator*() const {
-                return board_.move(*piece_iter_, *move_iter_);
+                return board_.move(*from_iter_, *to_iter_);
             }
 
             //! Move iterator forward
             //! @return reference to self
             moves_iterator &operator++() {
-                ++move_iter_;
-                while (move_iter_ == BitBoard::iterator()) {
-                    ++piece_iter_;
-                    if (piece_iter_ == board_.can_move().end())
+                ++to_iter_;
+                while (to_iter_ == BitBoard::iterator()) {
+                    ++from_iter_;
+                    if (from_iter_ == board_.can_move().end())
                         break;
-                    move_iter_ = board_.moves_from(*piece_iter_).begin();
+                    to_iter_ = board_.moves_from(*from_iter_).begin();
                 }
                 return *this;
             }
@@ -358,8 +358,8 @@ namespace blooto {
             bool operator==(moves_iterator rhs) const {
                 return
                     &board_ == &rhs.board_ &&
-                    piece_iter_ == rhs.piece_iter_ &&
-                    move_iter_ == rhs.move_iter_;
+                    from_iter_ == rhs.from_iter_ &&
+                    to_iter_ == rhs.to_iter_;
             }
 
             //! Compare iterator with another one
@@ -368,8 +368,8 @@ namespace blooto {
             bool operator!=(moves_iterator rhs) const {
                 return
                     &board_ != &rhs.board_ ||
-                    piece_iter_ != rhs.piece_iter_ ||
-                    move_iter_ != rhs.move_iter_;
+                    from_iter_ != rhs.from_iter_ ||
+                    to_iter_ != rhs.to_iter_;
             }
 
         };

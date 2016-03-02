@@ -22,6 +22,7 @@
 #include <blooto/piecetype.hpp>
 #include <blooto/bishoptype.hpp>
 #include <blooto/rooktype.hpp>
+#include <blooto/knighttype.hpp>
 #include <blooto/queentype.hpp>
 #include <blooto/kingtype.hpp>
 
@@ -145,6 +146,19 @@ BOOST_AUTO_TEST_CASE(test_piece) {
     BOOST_CHECK_EQUAL_COLLECTIONS(p5_moves1.begin(), p5_moves1.end(),
                                   p5_moves1_expected.begin(),
                                   p5_moves1_expected.end());
+    Piece p6(Square::B2, KnightType::instance, ColourNeutral());
+    BOOST_CHECK_EQUAL(p6.square(), Square::B2);
+    BOOST_CHECK_EQUAL(&p6.piecetype(), &KnightType::instance);
+    BOOST_CHECK_EQUAL(p6.colour(), ColourNeutral());
+    BOOST_CHECK_EQUAL(p6, Piece::from_code("Sb2", ColourNeutral()));
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(p6), "Sb2");
+    BitBoard p6_moves1 = p6.moves({});
+    BitBoard p6_moves1_expected{
+        Square::A4 | Square::C4 | Square::D3 | Square::D1
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(p6_moves1.begin(), p6_moves1.end(),
+                                  p6_moves1_expected.begin(),
+                                  p6_moves1_expected.end());
     BOOST_CHECK_EXCEPTION(Piece::from_code("", ColourNeutral()),
                           Piece::ParseError, ExpectWhat("Empty piece code: "));
     BOOST_CHECK_EXCEPTION(Piece::from_code("1", ColourBlack()),

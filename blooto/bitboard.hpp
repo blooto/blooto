@@ -110,10 +110,20 @@ namespace blooto {
             data_type data_;
 
         public:
+
+            //! Iterator tag type
             using iterator_category = std::forward_iterator_tag;
+
+            //! The type pointed to by this iterator
             using value_type = Square;
+
+            //! Difference between iterators
             using difference_type = std::ptrdiff_t;
+
+            //! Pointer to value
             using pointer = value_type *;
+
+            //! Reference to value
             using reference = value_type &;
 
             //! Construct empty iterator with no more squares left.

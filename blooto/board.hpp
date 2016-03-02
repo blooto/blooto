@@ -193,10 +193,20 @@ namespace blooto {
             BitBoard::iterator iter_;
 
         public:
+
+            //! Iterator tag type
             using iterator_category = std::forward_iterator_tag;
+
+            //! The type pointed to by this iterator
             using value_type = Piece;
+
+            //! Difference between iterators
             using difference_type = std::ptrdiff_t;
+
+            //! Pointer to value
             using pointer = value_type *;
+
+            //! Reference to value
             using reference = value_type &;
 
             //! Construct iterator
@@ -290,10 +300,20 @@ namespace blooto {
             BitBoard::iterator to_iter_;
 
         public:
+
+            //! Iterator tag type
             using iterator_category = std::forward_iterator_tag;
+
+            //! The type pointed to by this iterator
             using value_type = Move;
+
+            //! Difference between iterators
             using difference_type = std::ptrdiff_t;
+
+            //! Pointer to value
             using pointer = value_type *;
+
+            //! Reference to value
             using reference = value_type &;
 
             //! Tag for constructing move_iterator pointing to begin of moves

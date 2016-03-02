@@ -35,6 +35,8 @@ namespace blooto {
     class BitBoard {
 
     public:
+        using value_type = Square;
+
         //! Raw 64-bin data internal representation.
         typedef std::uint64_t data_type;
 

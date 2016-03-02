@@ -153,6 +153,14 @@ namespace blooto {
             }
         }
 
+        //! Generate Move at this board from source and destination squares
+        //! @param from source square where the piece to be moved is located
+        //! @param to destination square where the piece to be moved to
+        //! @return Move created
+        Move move(Square from, Square to) const {
+            return Move{*piecetype(from), from, to, occupied()[to]};
+        }
+
         //! Move a piece on this board
         //! @param move move to apply
         //! @return pointer to type of piece being attacked or nullptr
@@ -317,10 +325,7 @@ namespace blooto {
             //! Move this iterator points to
             //! @return move
             Move operator*() const {
-                Square from{*piece_iter_};
-                Square to{*move_iter_};
-                return Move{*board_.piecetype(from),
-                            from, to, board_.occupied_[to]};
+                return board_.move(*piece_iter_, *move_iter_);
             }
 
             //! Move iterator forward

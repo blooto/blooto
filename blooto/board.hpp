@@ -228,67 +228,31 @@ namespace blooto {
         //! @return true if board contains no pieces
         bool empty() const {return occupied_.empty();}
 
-        //! Make iterator pointing to the first piece that can move
-        //! @return new iterator
-        iterator can_move_begin() const {
-            return iterator(*this, can_move_.begin());
-        }
-
-        //! Make iterator pointing after the last piece that can move
-        //! @return new iterator
-        iterator can_move_end() const {
-            return iterator(*this, can_move_.end());
-        }
-
-        //! Check that there are no pieces that can move
-        //! @return true if board contains no pieces that can move
-        bool can_move_empty() const {return can_move_.empty();}
-
-        //! Proxy class representing sequence of pieces that can move.
-        //! The main purpose of this class is to be returned by
-        //! Board::can_move() method.
+        //! BitBoard containing pieces that can move.
+        //! @retun bitboard of pieces of this board that can move
         //! Can be used like this:
         //! @code
         //! Board b;
         //! ...
-        //! for (auto piece: b.can_move()) {
+        //! for (auto square: b.can_move()) {
         //!     ...
         //! }
         //! @endcode
-        struct CanMove: Proxy {
-
-            //! Construct proxy object from board
-            using Proxy::Proxy;
-
-            //! Make iterator pointing to the first piece that can move
-            //! @return new iterator
-            iterator begin() const {return board().can_move_begin();}
-
-            //! Make iterator pointing after the last piece that can move
-            //! @return new iterator
-            iterator end() const {return board().can_move_end();}
-
-            //! Check that there are no pieces that can move
-            //! @return true if board contains no pieces that can move
-            bool empty() const {return board().can_move_empty();}
-
-        };
-
-        //! Create proxy object representing sequence of pieces that can move.
-        //! Can be used like this:
-        //! @code
-        //! Board b;
-        //! ...
-        //! for (auto piece: b.can_move()) {
-        //!     ...
-        //! }
-        //! @endcode
-        CanMove can_move() const {return CanMove{*this};}
+        BitBoard can_move() const {return can_move_;}
 
         //! Iterator over all possible (semi-legal) moves on the board
         class moves_iterator {
-            Board::iterator piece_iter_;
+            const Board &board_;
+            BitBoard::iterator piece_iter_;
             BitBoard::iterator move_iter_;
+
+            BitBoard moves_from_source() const {
+                Square sq = *piece_iter_;
+                const PieceType &piecetype =
+                    *piecetypes[board_.pieces_[code(sq)]];
+                return
+                    piecetype.moves(sq, board_.occupied_) & ~board_.friendlies_;
+            }
 
         public:
             using iterator_category = std::forward_iterator_tag;
@@ -306,55 +270,41 @@ namespace blooto {
             //! Construct move_iterator pointing to the first move
             //! @param board board ths iterator iterates over
             moves_iterator(const Board &board, begin)
-            : piece_iter_{board.can_move_begin()}
-            , move_iter_{
-                board.can_move_empty() ?
-                BitBoard::iterator() :
-                ((*piece_iter_).moves(board.occupied_) &
-                 ~board.friendlies_).begin()
-              }
+            : board_{board}, piece_iter_{board.can_move().begin()}
             {
-                while (piece_iter_ != board.can_move_end() &&
-                       move_iter_ == BitBoard::iterator())
-                {
-                    ++piece_iter_;
-                    if (piece_iter_ == board.can_move_end())
+                while (piece_iter_ != board.can_move().end()) {
+                    BitBoard moves = moves_from_source();
+                    if (!moves.empty()) {
+                        move_iter_ = moves.begin();
                         break;
-                    move_iter_ =
-                        ((*piece_iter_).moves(board.occupied_) &
-                         ~board.friendlies_).begin();
+                    }
+                    ++piece_iter_;
                 }
             }
 
             //! Construct move_iterator pointing after the last move
             //! @param board board ths iterator iterates over
             moves_iterator(const Board &board, end)
-            : piece_iter_{board.can_move_end()}
-            , move_iter_{BitBoard::iterator()}
-            {
-            }
+            : board_{board}, piece_iter_{board.can_move().end()} {}
 
             //! Move this iterator points to
             //! @return move
             Move operator*() const {
-                Piece p{*piece_iter_};
+                Square from{*piece_iter_};
                 Square to{*move_iter_};
-                return Move{p.piecetype(), p.square(), to,
-                            piece_iter_.board().occupied_[to]};
+                return Move{*piecetypes[board_.pieces_[code(from)]],
+                            from, to, board_.occupied_[to]};
             }
 
             //! Move iterator forward
             //! @return reference to self
             moves_iterator &operator++() {
-                const Board &board = piece_iter_.board();
                 ++move_iter_;
                 while (move_iter_ == BitBoard::iterator()) {
                     ++piece_iter_;
-                    if (piece_iter_ == board.can_move_end())
+                    if (piece_iter_ == board_.can_move().end())
                         break;
-                    move_iter_ =
-                        ((*piece_iter_).moves(board.occupied_) &
-                         ~board.friendlies_).begin();
+                    move_iter_ = moves_from_source().begin();
                 }
                 return *this;
             }
@@ -375,6 +325,7 @@ namespace blooto {
             //! @return true is iterators are equal
             bool operator==(moves_iterator rhs) const {
                 return
+                    &board_ == &rhs.board_ &&
                     piece_iter_ == rhs.piece_iter_ &&
                     move_iter_ == rhs.move_iter_;
             }
@@ -384,6 +335,7 @@ namespace blooto {
             //! @return true is iterators are not equal
             bool operator!=(moves_iterator rhs) const {
                 return
+                    &board_ != &rhs.board_ ||
                     piece_iter_ != rhs.piece_iter_ ||
                     move_iter_ != rhs.move_iter_;
             }

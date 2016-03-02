@@ -250,7 +250,7 @@ namespace blooto {
         BitBoard friendlies() const {return friendlies_;}
 
         //! BitBoard containing pieces that can move.
-        //! @retun bitboard of pieces of this board that can move
+        //! @return bitboard of pieces of this board that can move
         //! Can be used like this:
         //! @code
         //! Board b;

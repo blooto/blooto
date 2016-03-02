@@ -228,6 +228,14 @@ namespace blooto {
         //! @return true if board contains no pieces
         bool empty() const {return occupied_.empty();}
 
+        //! BitBoard containing occupied squares
+        //! @return bitboard of all occupied squares
+        BitBoard occupied() const {return occupied_;}
+
+        //! BitBoard containing squares occupied only by friendly pieces
+        //! @return bitboard of squares occupied by friendly pieces
+        BitBoard friendlies() const {return friendlies_;}
+
         //! BitBoard containing pieces that can move.
         //! @retun bitboard of pieces of this board that can move
         //! Can be used like this:

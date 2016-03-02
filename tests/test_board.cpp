@@ -34,11 +34,21 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {Square::D3, BishopType::instance, ColourWhite()},
         {Square::F5, BishopType::instance, ColourBlack()},
     };
+    std::initializer_list<Square> occupied{Square::B1, Square::D3, Square::F5};
+    std::initializer_list<Square> friendlies{Square::D3};
     std::initializer_list<Square> pieces_can_move{Square::B1, Square::D3};
     Board board{pieces};
     BOOST_CHECK(!board.empty());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces.begin(), pieces.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),
+                                  board.occupied().end(),
+                                  occupied.begin(),
+                                  occupied.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.friendlies().begin(),
+                                  board.friendlies().end(),
+                                  friendlies.begin(),
+                                  friendlies.end());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move().begin(),
                                   board.can_move().end(),
                                   pieces_can_move.begin(),
@@ -68,8 +78,19 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {Square::D3, BishopType::instance, ColourWhite()},
         {Square::F5, BishopType::instance, ColourBlack()},
     };
+    std::initializer_list<Square> occupied2{
+        Square::B1, Square::E2, Square::D3, Square::F5
+    };
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces2.begin(), pieces2.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),
+                                  board.occupied().end(),
+                                  occupied2.begin(),
+                                  occupied2.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.friendlies().begin(),
+                                  board.friendlies().end(),
+                                  friendlies.begin(),
+                                  friendlies.end());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move().begin(),
                                   board.can_move().end(),
                                   pieces_can_move.begin(),
@@ -114,6 +135,23 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {Square::E2, RookType::instance, ColourBlack()},
         {Square::F5, BishopType::instance, ColourWhite()},
     };
+    std::initializer_list<Square> occupied3{
+        Square::B1, Square::E2, Square::F5
+    };
+    std::initializer_list<Square> friendlies3{Square::F5};
+    std::initializer_list<Square> can_move3{Square::B1, Square::F5};
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),
+                                  board.occupied().end(),
+                                  occupied3.begin(),
+                                  occupied3.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.friendlies().begin(),
+                                  board.friendlies().end(),
+                                  friendlies3.begin(),
+                                  friendlies3.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move().begin(),
+                                  board.can_move().end(),
+                                  can_move3.begin(),
+                                  can_move3.end());
     std::initializer_list<Move> moves3{
         {BishopType::instance, Square::B1, Square::A2},
         {BishopType::instance, Square::B1, Square::C2},
@@ -148,6 +186,20 @@ BOOST_AUTO_TEST_CASE(test_board) {
                           BishopType::instance,
                        ColourWhite()}));
     board.flip_colour();
+    std::initializer_list<Square> friendlies4{Square::E2};
+    std::initializer_list<Square> can_move4{Square::B1, Square::E2};
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),
+                                  board.occupied().end(),
+                                  occupied3.begin(),
+                                  occupied3.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.friendlies().begin(),
+                                  board.friendlies().end(),
+                                  friendlies4.begin(),
+                                  friendlies4.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move().begin(),
+                                  board.can_move().end(),
+                                  can_move4.begin(),
+                                  can_move4.end());
     std::initializer_list<Move> moves4{
         {BishopType::instance, Square::B1, Square::A2},
         {BishopType::instance, Square::B1, Square::C2},

@@ -119,13 +119,19 @@ namespace blooto {
                 can_move_ |= piece.square();
         }
 
+        //! Type of pice at the square
+        //! @param square square
+        //! @return pointer to type of the piece at that square (or nullptr)
+        const PieceType *piecetype(Square square) const {
+            return piecetypes[pieces_[code(square)]];
+        }
+
         //! Piece at the square
         //! @param square square
         //! @return piece at that square
         //! Behaviour is undefined is there is no piece at that square!
         Piece operator[](Square square) const {
-            auto sq = static_cast<std::uint8_t>(square);
-            return Piece(square, *piecetypes[pieces_[sq]],
+            return Piece(square, *piecetype(square),
                          friendlies_[square] ? colour_.to_piece_colour() :
                          can_move_[square] ? PieceColour(ColourNeutral()) :
                          colour_.opposite().to_piece_colour());
@@ -151,7 +157,7 @@ namespace blooto {
         //! @param move move to apply
         //! @return pointer to type of piece being attacked or nullptr
         const PieceType *make_move(const Move &move) {
-            const PieceType *attacked = piecetypes[pieces_[code(move.to())]];
+            const PieceType *attacked = piecetype(move.to());
             make_move(move.from(), move.to());
             return attacked;
         }
@@ -269,8 +275,7 @@ namespace blooto {
 
             BitBoard moves_from_source() const {
                 Square sq = *piece_iter_;
-                const PieceType &piecetype =
-                    *piecetypes[board_.pieces_[code(sq)]];
+                const PieceType &piecetype = *board_.piecetype(sq);
                 return
                     piecetype.moves(board_.colour_, sq, board_.occupied_) &
                     ~board_.friendlies_;
@@ -314,7 +319,7 @@ namespace blooto {
             Move operator*() const {
                 Square from{*piece_iter_};
                 Square to{*move_iter_};
-                return Move{*piecetypes[board_.pieces_[code(from)]],
+                return Move{*board_.piecetype(from),
                             from, to, board_.occupied_[to]};
             }
 

@@ -28,6 +28,7 @@
 #include <blooto/bishoptype.hpp>
 #include <blooto/rooktype.hpp>
 #include <blooto/queentype.hpp>
+#include <blooto/kingtype.hpp>
 #include <blooto/piece.hpp>
 #include <blooto/colour.hpp>
 #include <blooto/move.hpp>
@@ -40,7 +41,8 @@ namespace blooto {
             nullptr, // code 0 means no piece
             &BishopType::instance,
             &RookType::instance,
-            &QueenType::instance
+            &QueenType::instance,
+            &KingType::instance,
         };
 
         class PieceTypeCodes {

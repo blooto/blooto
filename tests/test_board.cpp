@@ -21,6 +21,7 @@
 #include <blooto/bishoptype.hpp>
 #include <blooto/rooktype.hpp>
 #include <blooto/queentype.hpp>
+#include <blooto/kingtype.hpp>
 #include <blooto/move.hpp>
 
 #define BOOST_TEST_DYN_LINK
@@ -33,10 +34,15 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {Square::B1, BishopType::instance, ColourNeutral()},
         {Square::D3, BishopType::instance, ColourWhite()},
         {Square::F5, BishopType::instance, ColourBlack()},
+        {Square::H7, KingType::instance, ColourWhite()},
     };
-    std::initializer_list<Square> occupied{Square::B1, Square::D3, Square::F5};
-    std::initializer_list<Square> friendlies{Square::D3};
-    std::initializer_list<Square> pieces_can_move{Square::B1, Square::D3};
+    std::initializer_list<Square> occupied{
+        Square::B1, Square::D3, Square::F5, Square::H7
+    };
+    std::initializer_list<Square> friendlies{Square::D3, Square::H7};
+    std::initializer_list<Square> pieces_can_move{
+        Square::B1, Square::D3, Square::H7
+    };
     Board board{pieces};
     BOOST_CHECK(!board.empty());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
@@ -65,6 +71,11 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {BishopType::instance, Square::D3, Square::B5},
         {BishopType::instance, Square::D3, Square::F5, true},
         {BishopType::instance, Square::D3, Square::A6},
+        {KingType::instance, Square::H7, Square::G6},
+        {KingType::instance, Square::H7, Square::H6},
+        {KingType::instance, Square::H7, Square::G7},
+        {KingType::instance, Square::H7, Square::G8},
+        {KingType::instance, Square::H7, Square::H8},
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(board.moves_begin(), board.moves_end(),
                                   moves1.begin(), moves1.end());
@@ -77,9 +88,10 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {Square::E2, RookType::instance, ColourBlack()},
         {Square::D3, BishopType::instance, ColourWhite()},
         {Square::F5, BishopType::instance, ColourBlack()},
+        {Square::H7, KingType::instance, ColourWhite()},
     };
     std::initializer_list<Square> occupied2{
-        Square::B1, Square::E2, Square::D3, Square::F5
+        Square::B1, Square::E2, Square::D3, Square::F5, Square::H7
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces2.begin(), pieces2.end());
@@ -106,6 +118,11 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {BishopType::instance, Square::D3, Square::B5},
         {BishopType::instance, Square::D3, Square::F5, true},
         {BishopType::instance, Square::D3, Square::A6},
+        {KingType::instance, Square::H7, Square::G6},
+        {KingType::instance, Square::H7, Square::H6},
+        {KingType::instance, Square::H7, Square::G7},
+        {KingType::instance, Square::H7, Square::G8},
+        {KingType::instance, Square::H7, Square::H8},
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(board.moves_begin(), board.moves_end(),
                                   moves2.begin(), moves2.end());
@@ -127,6 +144,10 @@ BOOST_AUTO_TEST_CASE(test_board) {
                       (Piece{Square::F5,
                              BishopType::instance,
                              ColourBlack()}));
+    BOOST_CHECK_EQUAL(board[Square::H7],
+                      (Piece{Square::H7,
+                          KingType::instance,
+                       ColourWhite()}));
     BOOST_CHECK_EQUAL(board.make_move({BishopType::instance, Square::D3,
                                        Square::F5, true}),
                       &BishopType::instance);
@@ -134,12 +155,15 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {Square::B1, BishopType::instance, ColourNeutral()},
         {Square::E2, RookType::instance, ColourBlack()},
         {Square::F5, BishopType::instance, ColourWhite()},
+        {Square::H7, KingType::instance, ColourWhite()},
     };
     std::initializer_list<Square> occupied3{
-        Square::B1, Square::E2, Square::F5
+        Square::B1, Square::E2, Square::F5, Square::H7
     };
-    std::initializer_list<Square> friendlies3{Square::F5};
-    std::initializer_list<Square> can_move3{Square::B1, Square::F5};
+    std::initializer_list<Square> friendlies3{Square::F5, Square::H7};
+    std::initializer_list<Square> can_move3{
+        Square::B1, Square::F5, Square::H7
+    };
     BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),
                                   board.occupied().end(),
                                   occupied3.begin(),
@@ -166,8 +190,12 @@ BOOST_AUTO_TEST_CASE(test_board) {
         {BishopType::instance, Square::F5, Square::E6},
         {BishopType::instance, Square::F5, Square::G6},
         {BishopType::instance, Square::F5, Square::D7},
-        {BishopType::instance, Square::F5, Square::H7},
         {BishopType::instance, Square::F5, Square::C8},
+        {KingType::instance, Square::H7, Square::G6},
+        {KingType::instance, Square::H7, Square::H6},
+        {KingType::instance, Square::H7, Square::G7},
+        {KingType::instance, Square::H7, Square::G8},
+        {KingType::instance, Square::H7, Square::H8},
     };
     BOOST_CHECK_EQUAL_COLLECTIONS(board.moves_begin(), board.moves_end(),
                                   moves3.begin(), moves3.end());

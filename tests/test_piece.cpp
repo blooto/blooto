@@ -23,6 +23,7 @@
 #include <blooto/bishoptype.hpp>
 #include <blooto/rooktype.hpp>
 #include <blooto/queentype.hpp>
+#include <blooto/kingtype.hpp>
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE test_piece
@@ -114,6 +115,36 @@ BOOST_AUTO_TEST_CASE(test_piece) {
     BOOST_CHECK_EQUAL_COLLECTIONS(p3_moves2.begin(), p3_moves2.end(),
                                   p3_moves2_expected.begin(),
                                   p3_moves2_expected.end());
+    Piece p4(Square::A1, KingType::instance, ColourWhite());
+    BOOST_CHECK_EQUAL(p4.square(), Square::A1);
+    BOOST_CHECK_EQUAL(&p4.piecetype(), &KingType::instance);
+    BOOST_CHECK_EQUAL(p4.colour(), ColourWhite());
+    BOOST_CHECK_EQUAL(p4, Piece::from_code("Ka1", ColourWhite()));
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(p4), "Ka1");
+    BitBoard p4_moves1 = p4.moves({});
+    BitBoard p4_moves1_expected{Square::B1 | Square::B2 | Square::A2};
+    BOOST_CHECK_EQUAL_COLLECTIONS(p4_moves1.begin(), p4_moves1.end(),
+                                  p4_moves1_expected.begin(),
+                                  p4_moves1_expected.end());
+    BitBoard p4_moves2 = p4.moves({Square::B1 | Square::B2});
+    BitBoard p4_moves2_expected{Square::B1 | Square::B2 | Square::A2};
+    BOOST_CHECK_EQUAL_COLLECTIONS(p4_moves2.begin(), p4_moves2.end(),
+                                  p4_moves2_expected.begin(),
+                                  p4_moves2_expected.end());
+    Piece p5(Square::D5, KingType::instance, ColourBlack());
+    BOOST_CHECK_EQUAL(p5.square(), Square::D5);
+    BOOST_CHECK_EQUAL(&p5.piecetype(), &KingType::instance);
+    BOOST_CHECK_EQUAL(p5.colour(), ColourBlack());
+    BOOST_CHECK_EQUAL(p5, Piece::from_code("Kd5", ColourBlack()));
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(p5), "Kd5");
+    BitBoard p5_moves1 = p5.moves({});
+    BitBoard p5_moves1_expected{
+        Square::D4 | Square::C4 | Square::C5 | Square::C6 |
+        Square::D6 | Square::E6 | Square::E5 | Square::E4
+    };
+    BOOST_CHECK_EQUAL_COLLECTIONS(p5_moves1.begin(), p5_moves1.end(),
+                                  p5_moves1_expected.begin(),
+                                  p5_moves1_expected.end());
     BOOST_CHECK_EXCEPTION(Piece::from_code("", ColourNeutral()),
                           Piece::ParseError, ExpectWhat("Empty piece code: "));
     BOOST_CHECK_EXCEPTION(Piece::from_code("1", ColourBlack()),

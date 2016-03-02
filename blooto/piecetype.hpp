@@ -20,6 +20,7 @@
 #include <boost/bimap.hpp>
 
 #include <blooto/square.hpp>
+#include <blooto/colour.hpp>
 
 namespace blooto {
 
@@ -88,11 +89,14 @@ namespace blooto {
         //! @return one-letter code
         const std::string &code() const {return code(this);}
 
-        //! All possible moves from given square for given occupancy.
+        //! All possible moves from given square for given colour and occupancy.
+        //! @param colour move colour
         //! @param square square to originate moves from
         //! @param occupancy BitBoard containing occipoed squares
         //! @return BitBoard containing squares this piece can move to
-        virtual BitBoard moves(Square square, BitBoard occupancy) const = 0;
+        virtual BitBoard moves(MoveColour colour,
+                               Square square,
+                               BitBoard occupancy) const = 0;
 
     };
 

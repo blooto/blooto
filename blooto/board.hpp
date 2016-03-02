@@ -263,7 +263,8 @@ namespace blooto {
                 const PieceType &piecetype =
                     *piecetypes[board_.pieces_[code(sq)]];
                 return
-                    piecetype.moves(sq, board_.occupied_) & ~board_.friendlies_;
+                    piecetype.moves(board_.colour_, sq, board_.occupied_) &
+                    ~board_.friendlies_;
             }
 
         public:

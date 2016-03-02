@@ -86,11 +86,12 @@ namespace blooto {
                 colour_ != rhs.colour_;
         }
 
-        //! All possible moves by this piece for given occupancy
+        //! All possible moves by this piece for given colour and occupancy
+        //! @param colour move colour
         //! @param occupancy BitBoard containing occipoed squares
         //! @return BitBoard containing squares this piece can move to
-        BitBoard moves(BitBoard occupancy) const {
-            return piecetype_.moves(square_, occupancy);
+        BitBoard moves(MoveColour colour, BitBoard occupancy) const {
+            return piecetype_.moves(colour, square_, occupancy);
         }
 
         //! Output piece to output stream

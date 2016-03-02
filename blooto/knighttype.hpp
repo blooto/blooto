@@ -30,11 +30,15 @@ namespace blooto {
         //! String piece code
         constexpr static const char *codestring = "S";
 
-        //! All possible moves from given square for given occupancy.
+        //! All possible moves from given square for given colour and occupancy.
+        //! @param colour move colour
         //! @param square square to originate moves from
         //! @param occupancy BitBoard containing occipoed squares
         //! @return BitBoard containing squares this piece can move to
-        BitBoard moves(Square square, BitBoard occupancy) const override {
+        BitBoard moves(MoveColour colour,
+                       Square square,
+                       BitBoard occupancy) const override
+        {
             return moves_for_square[blooto::code(square)];
         }
 

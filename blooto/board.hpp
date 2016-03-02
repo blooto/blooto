@@ -161,6 +161,14 @@ namespace blooto {
             return Move{*piecetype(from), from, to, occupied()[to]};
         }
 
+        //! Bitboard of moves that can make a piece at given square
+        //! @param square square a piece located at
+        //! @return bitboard of squares this piece can move to
+        BitBoard moves_from(Square square) const {
+            const PieceType &pt = *piecetype(square);
+            return pt.moves(colour_, square, occupied_) & ~friendlies_;
+        }
+
         //! Move a piece on this board
         //! @param move move to apply
         //! @return pointer to type of piece being attacked or nullptr
@@ -281,14 +289,6 @@ namespace blooto {
             BitBoard::iterator piece_iter_;
             BitBoard::iterator move_iter_;
 
-            BitBoard moves_from_source() const {
-                Square sq = *piece_iter_;
-                const PieceType &piecetype = *board_.piecetype(sq);
-                return
-                    piecetype.moves(board_.colour_, sq, board_.occupied_) &
-                    ~board_.friendlies_;
-            }
-
         public:
             using iterator_category = std::forward_iterator_tag;
             using value_type = Move;
@@ -308,7 +308,7 @@ namespace blooto {
             : board_{board}, piece_iter_{board.can_move().begin()}
             {
                 while (piece_iter_ != board.can_move().end()) {
-                    BitBoard moves = moves_from_source();
+                    BitBoard moves = board.moves_from(*piece_iter_);
                     if (!moves.empty()) {
                         move_iter_ = moves.begin();
                         break;
@@ -336,7 +336,7 @@ namespace blooto {
                     ++piece_iter_;
                     if (piece_iter_ == board_.can_move().end())
                         break;
-                    move_iter_ = moves_from_source().begin();
+                    move_iter_ = board_.moves_from(*piece_iter_).begin();
                 }
                 return *this;
             }

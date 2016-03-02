@@ -25,6 +25,7 @@
 #include <blooto/square.hpp>
 #include <blooto/bitboard.hpp>
 #include <blooto/piecetype.hpp>
+#include <blooto/pawntype.hpp>
 #include <blooto/bishoptype.hpp>
 #include <blooto/rooktype.hpp>
 #include <blooto/knighttype.hpp>
@@ -40,6 +41,7 @@ namespace blooto {
     class Board {
         constexpr static const PieceType *piecetypes[] = {
             nullptr, // code 0 means no piece
+            &PawnType::instance,
             &BishopType::instance,
             &RookType::instance,
             &KnightType::instance,

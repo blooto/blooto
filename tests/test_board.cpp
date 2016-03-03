@@ -14,6 +14,8 @@
 // along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <initializer_list>
+#include <string>
+#include <boost/lexical_cast.hpp>
 
 #include <blooto/board.hpp>
 #include <blooto/square.hpp>
@@ -59,6 +61,12 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.can_move().end(),
                                   pieces_can_move.begin(),
                                   pieces_can_move.end());
+    std::string board_str1{"Neutral Bb1 White Bd3 Kh7 Black Bf5"};
+    Board board_expected1{boost::lexical_cast<Board>(board_str1)};
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
+                                  board_expected1.begin(),
+                                  board_expected1.end());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(board), board_str1);
     std::initializer_list<Move> moves1{
         {BishopType::instance, Square::B1, Square::A2},
         {BishopType::instance, Square::B1, Square::C2},
@@ -107,6 +115,12 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.can_move().end(),
                                   pieces_can_move.begin(),
                                   pieces_can_move.end());
+    std::string board_str2{"Neutral Bb1 White Bd3 Kh7 Black Re2 Bf5"};
+    Board board_expected2{boost::lexical_cast<Board>(board_str2)};
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
+                                  board_expected2.begin(),
+                                  board_expected2.end());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(board), board_str2);
     std::initializer_list<Move> moves2{
         {BishopType::instance, Square::B1, Square::A2},
         {BishopType::instance, Square::B1, Square::C2},
@@ -176,6 +190,12 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.can_move().end(),
                                   can_move3.begin(),
                                   can_move3.end());
+    std::string board_str3{"Neutral Bb1 White Bf5 Kh7 Black Re2"};
+    Board board_expected3{boost::lexical_cast<Board>(board_str3)};
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
+                                  board_expected3.begin(),
+                                  board_expected3.end());
+    BOOST_CHECK_EQUAL(boost::lexical_cast<std::string>(board), board_str3);
     std::initializer_list<Move> moves3{
         {BishopType::instance, Square::B1, Square::A2},
         {BishopType::instance, Square::B1, Square::C2},

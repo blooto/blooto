@@ -21,6 +21,7 @@
 #include <map>
 #include <initializer_list>
 #include <iterator>
+#include <iostream>
 
 #include <blooto/square.hpp>
 #include <blooto/bitboard.hpp>
@@ -456,6 +457,19 @@ namespace blooto {
 
     };
 
+    //! Read board from input stream
+    //! @param in input stream
+    //! @param board board to read
+    //! @return reference to the same input stream for operator chaining
+    //! Please note that this input operator just inserts new pieces
+    //! to the board, so the board is not cleared before input.
+    std::istream &operator>>(std::istream &in, Board &board);
+
+    //! Write board to output stream
+    //! @param out output stream
+    //! @param board board to write
+    //! @return reference to the same input stream for operator chaining
+    std::ostream &operator<<(std::ostream &out, const Board &board);
 }
 
 #endif

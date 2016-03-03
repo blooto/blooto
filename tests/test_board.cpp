@@ -178,6 +178,8 @@ BOOST_AUTO_TEST_CASE(test_board) {
     std::initializer_list<Square> can_move3{
         Square::B1, Square::F5, Square::H7
     };
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
+                                  pieces3.begin(), pieces3.end());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),
                                   board.occupied().end(),
                                   occupied3.begin(),

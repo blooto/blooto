@@ -51,7 +51,7 @@ namespace blooto {
         //! @param sq a single square
         explicit constexpr BitBoard(Square sq)
         : data_(data_type(1) << static_cast<unsigned>(sq)) {}
-        
+
         //! Construct BitBoard from another BitBoard.
         //! @param other another BitBoard
         BitBoard(const BitBoard &other) = default;

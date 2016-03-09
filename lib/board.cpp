@@ -14,17 +14,24 @@
 // along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
+#include <boost/io/ios_state.hpp>
 
 #include <blooto/board.hpp>
 
 constexpr const blooto::PieceType *blooto::Board::piecetypes[];
 
 std::istream &blooto::operator>>(std::istream &in, blooto::Board &board) {
+    std::istream::sentry s(in, true);
+    if (!s)
+        return in;
+    boost::io::ios_all_saver saver(in);
+    if (!(in >> std::skipws))
+        return in;
     std::string str;
     PieceColour colour{ColourWhite()};
-    while (std::getline(in, str, ' ')) {
-        if (str == "\n") {
-        } else if (str == "Neutral") {
+    std::istream::iostate err = std::istream::goodbit;
+    while (in >> str) {
+        if (str == "Neutral") {
             colour = ColourNeutral();
         } else if (str == "White") {
             colour = ColourWhite();
@@ -34,13 +41,20 @@ std::istream &blooto::operator>>(std::istream &in, blooto::Board &board) {
             try {
                 board.insert(Piece::from_code(str, colour));
             } catch (const Piece::ParseError &) {
-                in.setstate(std::istream::failbit);
+                err |= std::istream::failbit;
                 break;
             }
         }
-        if (in.eof())
+        if (in.eof()) {
+            err |= std::istream::eofbit;
             break;
+        }
     }
+    if (std::cin.bad())
+        err |= std::istream::badbit;
+    std::cin.clear();
+    if (err)
+        in.setstate(err);
     return in;
 }
 

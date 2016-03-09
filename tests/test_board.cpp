@@ -47,6 +47,7 @@ BOOST_AUTO_TEST_CASE(test_board) {
     };
     Board board{pieces};
     BOOST_CHECK(!board.empty());
+    BOOST_CHECK_EQUAL(board.colour(), ColourWhite());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces.begin(), pieces.end());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),

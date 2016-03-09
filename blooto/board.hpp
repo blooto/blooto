@@ -116,6 +116,10 @@ namespace blooto {
                 insert(p);
         }
 
+        //! Move colour access method
+        //! @return current move colour
+        MoveColour colour() const {return colour_;}
+
         //! Add a piece to this board
         //! @param piece piece to add
         void insert(const Piece &piece) {

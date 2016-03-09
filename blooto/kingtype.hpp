@@ -42,6 +42,10 @@ namespace blooto {
             return moves_for_square[blooto::code(square)];
         }
 
+        //! Check whether this piece type can be a candidate to promote to
+        //! @return true if other pieces can be promoted to this one
+        bool can_be_promotion() const override {return false;}
+
     };
 
 }

@@ -27,6 +27,7 @@ namespace blooto {
         Square from_;
         Square to_;
         bool attack_;
+        const PieceType *promotion_;
 
     public:
 
@@ -35,11 +36,14 @@ namespace blooto {
         //! @param to destination of the move
         //! @param piecetype type of piece that is moving
         //! @param attack true if this move is attack
+        //! @param promotion type of piece to promote to (or nullptr)
         constexpr Move(const PieceType &piecetype,
                        Square from,
                        Square to,
-                       bool attack = false) noexcept
-        : piecetype_(piecetype), from_(from), to_(to), attack_(attack) {}
+                       bool attack = false,
+                       const PieceType *promotion = nullptr) noexcept
+        : piecetype_(piecetype), from_(from), to_(to)
+        , attack_(attack), promotion_(promotion) {}
 
         //! Default copy constructor
         //! @param other other object used to construct this one
@@ -75,6 +79,10 @@ namespace blooto {
         //! @return true is the move is attack
         constexpr bool attack() const {return attack_;}
 
+        //! Piece type to promote to (or nullptr)
+        //! @return pointer to piece type to promote to
+        constexpr const PieceType *promotion() const {return promotion_;}
+
         //! Compare with other move for equality
         //! @param rhs other move
         //! @return true if both moves are equal
@@ -83,7 +91,8 @@ namespace blooto {
                 &piecetype_ == &rhs.piecetype_ &&
                 from_ == rhs.from_ &&
                 to_ == rhs.to_ &&
-                attack_ == rhs.attack_;
+                attack_ == rhs.attack_ &&
+                promotion_ == rhs.promotion_;
         }
 
         //! Compare with other move for inequality
@@ -94,7 +103,8 @@ namespace blooto {
                 &piecetype_ != &rhs.piecetype_ ||
                 from_ != rhs.from_ ||
                 to_ != rhs.to_ ||
-                attack_ != rhs.attack_;
+                attack_ != rhs.attack_ ||
+                promotion_ != rhs.promotion_;
         }
 
         //! Output move to output stream
@@ -105,8 +115,11 @@ namespace blooto {
         friend std::basic_ostream<CharT, CharTraits> &
         operator<<(std::basic_ostream<CharT, CharTraits> &out, const Move &move)
         {
-            return out << move.piecetype().code() << move.from()
-                       << (move.attack() ? '*' : '-') << move.to();
+            out << move.piecetype().code() << move.from()
+                << (move.attack() ? '*' : '-') << move.to();
+            if (move.promotion())
+                out << '=' << move.promotion()->code();
+            return out;
         }
 
     };

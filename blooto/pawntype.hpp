@@ -112,6 +112,23 @@ namespace blooto {
                                         colour);
         }
 
+        //! Check whether this piece type can be promoted on given square
+        //! @param colour move colour
+        //! @param square square where the piece is located
+        //! @return true if the piece can be promoted
+        bool can_be_promoted(MoveColour colour, Square square) const override {
+            struct promotion_rank: boost::static_visitor<std::uint8_t> {
+                std::uint8_t operator()(ColourWhite) const {return 7;}
+                std::uint8_t operator()(ColourBlack) const {return 0;}
+            };
+            static promotion_rank pr;
+            return rank(square) == boost::apply_visitor(pr, colour);
+        }
+
+        //! Check whether this piece type can be a candidate to promote to
+        //! @return true if other pieces can be promoted to this one
+        bool can_be_promotion() const override {return false;}
+
     };
 
 }

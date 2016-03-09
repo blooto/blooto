@@ -195,6 +195,15 @@ namespace blooto {
             return Move{*piecetype(from), from, to, occupied()[to]};
         }
 
+        //! Generate Move with promotion
+        //! @param from source square where the piece to be moved is located
+        //! @param to destination square where the piece to be moved to
+        //! @param promotion piece type to promote piece to
+        //! @return Move created
+        Move move(Square from, Square to, const PieceType &promotion) const {
+            return Move{*piecetype(from), from, to, occupied()[to], &promotion};
+        }
+
         //! Bitboard of moves that can make a piece at given square
         //! @param square square a piece located at
         //! @return bitboard of squares this piece can move to
@@ -209,6 +218,8 @@ namespace blooto {
         const PieceType *make_move(const Move &move) {
             const PieceType *attacked = piecetype(move.to());
             make_move(move.from(), move.to());
+            if (move.promotion())
+                make_promotion(move.to(), *move.promotion());
             return attacked;
         }
 
@@ -327,11 +338,159 @@ namespace blooto {
         //! @endcode
         BitBoard can_move() const {return can_move_;}
 
+        //! Iterator over all possible promotions
+        class promotions_iterator {
+            const PieceType *const *iter_;
+
+        public:
+            //! Iterator tag type
+            using iterator_category = std::forward_iterator_tag;
+
+            //! The type pointed to by this iterator
+            using value_type = const PieceType &;
+
+            //! Difference between iterators
+            using difference_type = std::ptrdiff_t;
+
+            //! Pointer to value
+            using pointer = const PieceType *;
+
+            //! Reference to value
+            using reference = value_type;
+
+            //! Tag for constructing promotions_iterator pointing to begin
+            struct begin {};
+
+            //! Tag for constructing promotions_iterator pointing after end
+            struct end {};
+
+            //! Construct null promotions_iterator
+            constexpr promotions_iterator() noexcept: iter_{nullptr} {}
+
+            //! Construct promotions_iterator pointing to the first promotion
+            promotions_iterator(begin): iter_{std::begin(piecetypes)} {
+                ++*this;
+            }
+
+            //! Construct promotions_iterator pointing after the last promotion
+            promotions_iterator(end): iter_{std::end(piecetypes)} {}
+
+            //! Promotion this iterator points to
+            //! @return promotion piecetype
+            constexpr const PieceType &operator*() const {
+                return **iter_;
+            }
+
+            //! Move iterator forward
+            //! @return reference to self
+            promotions_iterator &operator++() {
+                ++iter_;
+                while (iter_ != std::end(piecetypes) &&
+                    !(*iter_)->can_be_promotion())
+                    ++iter_;
+                return *this;
+            }
+
+            //! Move iterator forward
+            //! @return old value of self
+            //! This is post-increment operator,
+            //! moving iterator forward, but returning
+            //! old iterator's value.
+            promotions_iterator operator++(int) {
+                promotions_iterator tmp{*this};
+                ++*this;
+                return tmp;
+            }
+
+            //! Compare iterator with another one
+            //! @param rhs another iterator
+            //! @return true is iterators are equal
+            constexpr bool operator==(promotions_iterator rhs) const {
+                return iter_ == rhs.iter_;
+            }
+
+            //! Compare iterator with another one
+            //! @param rhs another iterator
+            //! @return true is iterators are not equal
+            constexpr bool operator!=(promotions_iterator rhs) const {
+                return iter_ != rhs.iter_;
+            }
+
+            //! Piece type code
+            //! @return code of piece type
+            constexpr std::uint8_t code() const {return iter_ - piecetypes;}
+
+        };
+
+        //! Make iterator pointing to the first possible promotion
+        //! @return new iterator
+        static promotions_iterator promotions_begin() {
+            return promotions_iterator(promotions_iterator::begin());
+        }
+
+        //! Make iterator pointing after the last possible promotion
+        //! @return new iterator
+        static promotions_iterator promotions_end() {
+            return promotions_iterator(promotions_iterator::end());
+        }
+
+        //! Proxy class representing sequence of possible piece promotions.
+        //! The main purpose of this class is to be returned by
+        //! Board::promotions() method.
+        //! Can be used like this:
+        //! @code
+        //! for (auto piecetype: Board::promotions()) {
+        //!     ...
+        //! }
+        //! @endcode
+        struct Promotions {
+
+            //! Iterator type
+            using iterator = Board::promotions_iterator;
+
+            //! Make iterator pointing to the first possible promotion
+            //! @return new iterator
+            iterator begin() const {return promotions_begin();}
+
+            //! Make iterator pointing after the last possible promotion
+            //! @return new iterator
+            iterator end() const {return promotions_end();}
+
+            //! Check that there are no possible promotions
+            //! @return always false
+            bool empty() const {return false;}
+
+        };
+
+        //! Create proxy object representing sequence of possible promotions
+        //! Can be used like this:
+        //! @code
+        //! for (auto piecetype: Board::promotions()) {
+        //!     ...
+        //! }
+        //! @endcode
+        static Promotions promotions() {return Promotions{};}
+
+        //! Move a promotion on this board
+        //! @param square square where the piece to be promoted is located
+        //! @param p iterator pointing to promotion to be performed
+        void make_promotion(Square square, promotions_iterator p) {
+            pieces_[code(square)] = p.code();
+        }
+
+        //! Move a promotion on this board
+        //! @param square square where the piece to be promoted is located
+        //! @param promotion piece type to use as promotion
+        void make_promotion(Square square, const PieceType &promotion) {
+            pieces_[code(square)] = PieceTypeCodes::get(promotion);
+        }
+
         //! Iterator over all possible (semi-legal) moves on the board
         class moves_iterator {
             const Board &board_;
             BitBoard::iterator from_iter_;
             BitBoard::iterator to_iter_;
+            promotions_iterator promo_iter_;
 
         public:
 
@@ -365,6 +524,12 @@ namespace blooto {
                     BitBoard moves = board.moves_from(*from_iter_);
                     if (!moves.empty()) {
                         to_iter_ = moves.begin();
+                        std::uint8_t pcidx = board_.pieces_[code(*from_iter_)];
+                        const PieceType &pt = *piecetypes[pcidx];
+                        if (pt.can_be_promoted(board_.colour(), *to_iter_))
+                            promo_iter_ = promotions_begin();
+                        else
+                            promo_iter_ = promotions_iterator{};
                         break;
                     }
                     ++from_iter_;
@@ -379,19 +544,35 @@ namespace blooto {
             //! Move this iterator points to
             //! @return move
             Move operator*() const {
-                return board_.move(*from_iter_, *to_iter_);
+                if (promo_iter_ == promotions_iterator{})
+                    return board_.move(*from_iter_, *to_iter_);
+                else
+                    return board_.move(*from_iter_, *to_iter_, *promo_iter_);
             }
 
             //! Move iterator forward
             //! @return reference to self
             moves_iterator &operator++() {
+                if (promo_iter_ != promotions_iterator{}) {
+                    ++promo_iter_;
+                    if (promo_iter_ == promotions_end())
+                        promo_iter_ = promotions_iterator{};
+                    else
+                        return *this;
+                }
                 ++to_iter_;
                 while (to_iter_ == BitBoard::iterator()) {
                     ++from_iter_;
                     if (from_iter_ == board_.can_move().end())
-                        break;
+                        return *this;
                     to_iter_ = board_.moves_from(*from_iter_).begin();
                 }
+                std::uint8_t pcidx = board_.pieces_[code(*from_iter_)];
+                const PieceType &pt = *piecetypes[pcidx];
+                if (pt.can_be_promoted(board_.colour(), *to_iter_))
+                    promo_iter_ = promotions_begin();
+                else
+                    promo_iter_ = promotions_iterator{};
                 return *this;
             }
 
@@ -413,7 +594,8 @@ namespace blooto {
                 return
                     &board_ == &rhs.board_ &&
                     from_iter_ == rhs.from_iter_ &&
-                    to_iter_ == rhs.to_iter_;
+                    to_iter_ == rhs.to_iter_ &&
+                    promo_iter_ == rhs.promo_iter_;
             }
 
             //! Compare iterator with another one
@@ -423,7 +605,8 @@ namespace blooto {
                 return
                     &board_ != &rhs.board_ ||
                     from_iter_ != rhs.from_iter_ ||
-                    to_iter_ != rhs.to_iter_;
+                    to_iter_ != rhs.to_iter_ ||
+                    promo_iter_ != rhs.promo_iter_;
             }
 
         };

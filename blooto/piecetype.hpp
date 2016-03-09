@@ -98,6 +98,18 @@ namespace blooto {
                                Square square,
                                BitBoard occupancy) const = 0;
 
+        //! Check whether this piece type can be promoted on given square
+        //! @param colour move colour
+        //! @param square square where the piece is located
+        //! @return true if the piece can be promoted
+        virtual bool can_be_promoted(MoveColour colour, Square square) const {
+            return false;
+        }
+
+        //! Check whether this piece type can be a candidate to promote to
+        //! @return true if other pieces can be promoted to this one
+        virtual bool can_be_promotion() const {return true;}
+
     };
 
     //! Base class for piece classes automatically registered with string codes.

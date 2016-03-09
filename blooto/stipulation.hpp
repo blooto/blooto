@@ -123,17 +123,44 @@ namespace blooto {
             std::unique_ptr<Requirement> req{(*reqp)()};
             ++reqp;
             for (Square from: board.can_move()) {
-                for (Square to: board.moves_from(from)) {
+                const PieceType &pt = *board.piecetype(from);
+                BitBoard moves_from{
+                    pt.moves(board.colour(), from, board.occupied()) &
+                    ~board.friendlies()
+                };
+                for (Square to: moves_from) {
                     Board newboard{board};
+                    MoveColour colour{newboard.colour()};
                     newboard.make_move(from, to);
                     newboard.flip_colour();
-                    Requirement::Result res{solve(newboard, reqp, reqend)};
-                    Requirement::result_type r{boost::apply_visitor(*req, res)};
-                    if (r)
-                        return *r;
-                    if (auto slp = boost::get<Solution::list>(&res))
-                        result.emplace_back(board.move(from, to),
-                                            std::move(*slp));
+                    if (pt.can_be_promoted(colour, to)) {
+                        for (auto p = Board::promotions().begin();
+                             p != Board::promotions().end(); ++p)
+                        {
+                            newboard.make_promotion(to, p);
+                            Requirement::Result res{
+                                solve(newboard, reqp, reqend)
+                            };
+                            Requirement::result_type r{
+                                boost::apply_visitor(*req, res)
+                            };
+                            if (r)
+                                return *r;
+                            if (auto slp = boost::get<Solution::list>(&res))
+                                result.emplace_back(board.move(from, to, *p),
+                                                    std::move(*slp));
+                        }
+                    } else {
+                        Requirement::Result res{solve(newboard, reqp, reqend)};
+                        Requirement::result_type r{
+                            boost::apply_visitor(*req, res)
+                        };
+                        if (r)
+                            return *r;
+                        if (auto slp = boost::get<Solution::list>(&res))
+                            result.emplace_back(board.move(from, to),
+                                                std::move(*slp));
+                    }
                 }
             }
             Requirement::result_type r{(*req)()};

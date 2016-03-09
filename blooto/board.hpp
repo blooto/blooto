@@ -93,11 +93,11 @@ namespace blooto {
     public:
 
         //! Construct empty board
-        Board(): colour_{ColourWhite()} {}
+        Board(): colour_{ColourWhite()} {pieces_.fill(0);}
 
         //! Construct empty board with specified move colour
         //! @param colour colour for the next move
-        Board(MoveColour colour): colour_{colour} {}
+        Board(MoveColour colour): colour_{colour} {pieces_.fill(0);}
 
         //! Default copy constructor
         //! @param other board to construct from
@@ -112,6 +112,7 @@ namespace blooto {
         Board(const std::initializer_list<Piece> &pieces)
         : colour_{ColourWhite()}
         {
+            pieces_.fill(0);
             for (const auto &p: pieces)
                 insert(p);
         }
@@ -122,6 +123,7 @@ namespace blooto {
         Board(MoveColour colour, const std::initializer_list<Piece> &pieces)
         : colour_{colour}
         {
+            pieces_.fill(0);
             for (const auto &p: pieces)
                 insert(p);
         }

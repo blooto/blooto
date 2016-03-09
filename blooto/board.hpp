@@ -53,11 +53,16 @@ namespace blooto {
         class PieceTypeCodes {
             using map_type = std::map<const PieceType *, std::uint8_t>;
             map_type map_;
+            map_type::mapped_type king_code_;
             template <size_t N>
             PieceTypeCodes(const PieceType *const (&piecetypes)[N])
             {
-                for (std::uint_fast8_t i = 1; i < N; ++i)
-                    map_.insert(map_type::value_type(piecetypes[i], i));
+                for (std::uint_fast8_t i = 1; i < N; ++i) {
+                    const PieceType *pt = piecetypes[i];
+                    map_.insert(map_type::value_type(pt, i));
+                    if (pt == &KingType::instance)
+                        king_code_ = i;
+                }
             }
         public:
             static const PieceTypeCodes &instance() {
@@ -66,6 +71,9 @@ namespace blooto {
             }
             static std::uint8_t get(const PieceType &pt) {
                 return instance().map_.find(&pt)->second;
+            }
+            static std::uint8_t king_code() {
+                return instance().king_code_;
             }
         };
 
@@ -136,6 +144,15 @@ namespace blooto {
                          friendlies_[square] ? colour_.to_piece_colour() :
                          can_move_[square] ? PieceColour(ColourNeutral()) :
                          colour_.opposite().to_piece_colour());
+        }
+
+        //! Check whether unfriendly king is at the square
+        //! @param square square to check
+        //! @return true if unfriendly king is at the square
+        bool is_unfriendly_king(Square square) const {
+            return
+                !can_move()[square] &&
+                pieces_[code(square)] == PieceTypeCodes::king_code();
         }
 
         //! Move a piece on this board

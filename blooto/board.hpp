@@ -116,6 +116,16 @@ namespace blooto {
                 insert(p);
         }
 
+        //! Construct board from move colour and list of pieces
+        //! @param colour colour for the next move
+        //! @param pieces list of pieces
+        Board(MoveColour colour, const std::initializer_list<Piece> &pieces)
+        : colour_{colour}
+        {
+            for (const auto &p: pieces)
+                insert(p);
+        }
+
         //! Move colour access method
         //! @return current move colour
         MoveColour colour() const {return colour_;}

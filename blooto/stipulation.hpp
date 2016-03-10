@@ -182,7 +182,7 @@ namespace blooto {
         MoveColour first_move_colour() const {return first_move_colour_;}
 
         //! Create stipulation for directmate
-        //! @param num_moves number ov moves
+        //! @param num_moves number of moves
         //! @return stipulation
         static Stipulation directmate(unsigned num_moves) {
             ReqFactoryList reqlist;
@@ -196,7 +196,7 @@ namespace blooto {
         }
 
         //! Create stipulation for helpmate
-        //! @param num_moves number ov moves
+        //! @param num_moves number of moves
         //! @return stipulation
         static Stipulation helpmate(unsigned num_moves) {
             ReqFactoryList reqlist;
@@ -208,7 +208,7 @@ namespace blooto {
             return {ColourBlack(), std::move(reqlist)};
         }
 
-        //! Create stipulation for helpmate for uneven number ov half-moves
+        //! Create stipulation for helpmate for uneven number of half-moves
         //! @param num_moves number of full moves
         //! @return stipulation
         static Stipulation helpmate_1(unsigned num_moves) {

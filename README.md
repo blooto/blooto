@@ -72,7 +72,7 @@ Its argument is number of full moves.
 The `-b` option specifies initial board content for the problem.
 If `-b` option is omited, board content is read from standard input.
 
-The expected output of this problem is following.
+The expected output of this problem's solution is following.
 
 ```
 Rh1-h6
@@ -108,7 +108,7 @@ Its argument is number of full moves.
 The `-b` option specifies initial board content for the problem.
 If `-b` option is omited, board content is read from standard input.
 
-The expected output of this problem is following.
+The expected output of this problem's solution is following.
 
 ```
 Kf6*e5
@@ -122,7 +122,7 @@ Kf6-g6
 ```
 
 The same composition can be solved with a different stipulation:
-helpmate with one fill move and additional half-move,
+helpmate with one full move and additional half-move,
 using the following command:
 
 ```sh

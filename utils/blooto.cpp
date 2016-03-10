@@ -58,6 +58,8 @@ int main(int argc, const char *const *argv) try {
     ("help", "produce help message")
     ("directmate,d", po::value<unsigned>(), "solve directmate problem")
     ("helpmate,h", po::value<unsigned>(), "solve helpmate problem")
+    ("helpmate+1", po::value<unsigned>(),
+     "solve helpmate problem with additional half-move")
     ("board,b", po::value<std::string>(), "board content")
     ;
     po::variables_map vm;
@@ -80,6 +82,9 @@ int main(int argc, const char *const *argv) try {
                      *in);
     } else if (vm.count("helpmate")) {
         return solve(Stipulation::helpmate(vm["helpmate"].as<unsigned>()),
+                     *in);
+    } else if (vm.count("helpmate+1")) {
+        return solve(Stipulation::helpmate_1(vm["helpmate+1"].as<unsigned>()),
                      *in);
     } else {
         std::cerr << "No stipulation specified.";

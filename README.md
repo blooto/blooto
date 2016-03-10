@@ -121,6 +121,26 @@ Kf6-g6
                         Ba4-e8
 ```
 
+The same composition can be solved with a different stipulation:
+helpmate with one fill move and additional half-move,
+using the following command:
+
+```sh
+./utils/blooto --helpmate+1 1 -b 'White Ph2 Rg3 Ka5 Bb5 Pe7 Black Pe2 Kf2 Qc5 Pe5 Rf7'
+```
+
+The `--helpmate+1` option specifies thet the type of problem to solve
+is helpmate with additional half-move.
+Its argument is number of full moves.
+
+The expected output of this problem's solution is following.
+
+```
+Pe7-e8=Q
+        Pe2-e1=R
+                Qe8*f7
+```
+
 ## Library
 
 The `blooto` utility is just a simple wrapper program.

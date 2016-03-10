@@ -208,6 +208,20 @@ namespace blooto {
             return {ColourBlack(), std::move(reqlist)};
         }
 
+        //! Create stipulation for helpmate for uneven number ov half-moves
+        //! @param num_moves number of full moves
+        //! @return stipulation
+        static Stipulation helpmate_1(unsigned num_moves) {
+            ReqFactoryList reqlist;
+            for (unsigned i = 0; i < num_moves; ++i) {
+                reqlist.push_back(create_req<RequireAny>());
+                reqlist.push_back(create_req<RequireAny>());
+            }
+            reqlist.push_back(create_req<RequireAny>());
+            reqlist.push_back(create_req<RequireAllIllegal>());
+            return {ColourWhite(), std::move(reqlist)};
+        }
+
         //! Solve chess composition problem with given board
         //! @param board board to solve problem for
         //! @result list of solutions (empty if no solutions found)

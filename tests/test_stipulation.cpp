@@ -278,3 +278,69 @@ BOOST_AUTO_TEST_CASE(test_stipulation_helpmate) {
     ++p1;
     BOOST_CHECK(p1 == sl.end());
 }
+
+BOOST_AUTO_TEST_CASE(test_stipulation_helpmate_2) {
+    using namespace blooto;
+    Stipulation st{Stipulation::helpmate(2)};
+    std::initializer_list<Piece> pieces{
+        {Square::H2, PawnType::instance, ColourWhite()},
+        {Square::G3, RookType::instance, ColourWhite()},
+        {Square::A5, KingType::instance, ColourWhite()},
+        {Square::B5, BishopType::instance, ColourWhite()},
+        {Square::E7, PawnType::instance, ColourWhite()},
+        {Square::E2, PawnType::instance, ColourBlack()},
+        {Square::F2, KingType::instance, ColourBlack()},
+        {Square::C5, QueenType::instance, ColourBlack()},
+        {Square::E5, PawnType::instance, ColourBlack()},
+        {Square::F7, RookType::instance, ColourBlack()},
+    };
+    Board board{st.first_move_colour(), pieces};
+    Solution::list sl{st.solve(board)};
+    Solution::list::const_iterator p1 = sl.begin();
+    BOOST_CHECK(p1 != sl.end());
+    BOOST_CHECK_EQUAL(&p1->move().piecetype(), &RookType::instance);
+    BOOST_CHECK_EQUAL(p1->move().from(), Square::F7);
+    BOOST_CHECK_EQUAL(p1->move().to(), Square::F8);
+    BOOST_CHECK(!p1->move().attack());
+    BOOST_CHECK(p1->move().promotion() == nullptr);
+    {
+        const Solution::list &sl2 = p1->next();
+        Solution::list::const_iterator p2 = sl2.begin();
+        BOOST_CHECK(p2 != sl2.end());
+        BOOST_CHECK_EQUAL(&p2->move().piecetype(), &PawnType::instance);
+        BOOST_CHECK_EQUAL(p2->move().from(), Square::E7);
+        BOOST_CHECK_EQUAL(p2->move().to(), Square::F8);
+        BOOST_CHECK(p2->move().attack());
+        BOOST_CHECK_EQUAL(p2->move().promotion(), &BishopType::instance);
+        {
+            const Solution::list &sl3 = p2->next();
+            Solution::list::const_iterator p3 = sl3.begin();
+            BOOST_CHECK(p3 != sl3.end());
+            BOOST_CHECK_EQUAL(&p3->move().piecetype(), &PawnType::instance);
+            BOOST_CHECK_EQUAL(p3->move().from(), Square::E2);
+            BOOST_CHECK_EQUAL(p3->move().to(), Square::E1);
+            BOOST_CHECK(!p3->move().attack());
+            BOOST_CHECK_EQUAL(p3->move().promotion(), &KnightType::instance);
+            {
+                const Solution::list &sl4 = p3->next();
+                Solution::list::const_iterator p4 = sl4.begin();
+                BOOST_CHECK(p4 != sl4.end());
+                BOOST_CHECK_EQUAL(&p4->move().piecetype(),
+                                  &BishopType::instance);
+                BOOST_CHECK_EQUAL(p4->move().from(), Square::F8);
+                BOOST_CHECK_EQUAL(p4->move().to(), Square::C5);
+                BOOST_CHECK(p4->move().attack());
+                BOOST_CHECK(p4->next().empty());
+                BOOST_CHECK(p4->move().promotion() == nullptr);
+                ++p4;
+                BOOST_CHECK(p4 == sl4.end());
+            }
+            ++p3;
+            BOOST_CHECK(p3 == sl3.end());
+        }
+        ++p2;
+        BOOST_CHECK(p2 == sl2.end());
+    }
+    ++p1;
+    BOOST_CHECK(p1 == sl.end());
+}

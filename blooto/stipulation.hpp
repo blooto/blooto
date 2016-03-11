@@ -39,7 +39,7 @@ namespace blooto {
             using Result = boost::variant<Solution::list, Failed>;
             virtual result_type operator()(const Solution::list &) = 0;
             virtual result_type operator()(Failed) = 0;
-            virtual result_type operator()() = 0;
+            virtual result_type operator()(const Board &) = 0;
             virtual ~Requirement() {}
         };
 
@@ -65,7 +65,7 @@ namespace blooto {
                 ++num_results;
                 return {};
             }
-            result_type operator()() override {
+            result_type operator()(const Board &) override {
                 if (num_results > 0)
                     return {};
                 return {Failed::NotFound};
@@ -84,12 +84,18 @@ namespace blooto {
                 ++num_results;
                 return {};
             }
-            result_type operator()() override {
+            result_type operator()(const Board &board) override {
+                if (num_results == 0) {
+                    Board newboard{board};
+                    newboard.flip_colour();
+                    if (!threat_to_king(newboard)) // Stalemate
+                        return {Failed::NotFound};
+                }
                 return {};
             }
         };
 
-        struct RequireAllIllegal: Requirement {
+        struct RequireMate: Requirement {
             unsigned num_illegal = 0;
             result_type operator()(Failed fail) override {
                 switch (fail) {
@@ -100,22 +106,33 @@ namespace blooto {
             result_type operator()(const Solution::list &) override {
                 return {Failed::NotFound};
             }
-            result_type operator()() override {
-                if (num_illegal > 0)
+            result_type operator()(const Board &board) override {
+                if (num_illegal > 0) {
+                    Board newboard{board};
+                    newboard.flip_colour();
+                    if (!threat_to_king(newboard)) // Stalemate
+                        return {Failed::NotFound};
                     return {};
+                }
                 return {Failed::NotFound};
             }
         };
+
+        static inline bool threat_to_king(const Board &board) {
+            for (Square from: board.can_move())
+                for (Square to: board.moves_from(from))
+                    if (board.is_unfriendly_king(to))
+                        return true;
+            return false;
+        }
 
         static Requirement::Result solve(const Board &board,
                                          ReqFactoryListIterator reqp,
                                          ReqFactoryListIterator reqend)
         {
             Solution::list result;
-            for (Square from: board.can_move())
-                for (Square to: board.moves_from(from))
-                    if (board.is_unfriendly_king(to))
-                        return Failed::IllegalMove;
+            if (threat_to_king(board))
+                return Failed::IllegalMove;
             if (reqp == reqend)
                 return result;
             std::unique_ptr<Requirement> req{(*reqp)()};
@@ -161,7 +178,7 @@ namespace blooto {
                     }
                 }
             }
-            Requirement::result_type r{(*req)()};
+            Requirement::result_type r{(*req)(board)};
             if (r)
                 return *r;
             return result;
@@ -189,7 +206,7 @@ namespace blooto {
                 reqlist.push_back(create_req<RequireAllOrMate>());
             }
             reqlist.push_back(create_req<RequireAny>());
-            reqlist.push_back(create_req<RequireAllIllegal>());
+            reqlist.push_back(create_req<RequireMate>());
             return {ColourWhite(), std::move(reqlist)};
         }
 
@@ -202,7 +219,7 @@ namespace blooto {
                 reqlist.push_back(create_req<RequireAny>());
                 reqlist.push_back(create_req<RequireAny>());
             }
-            reqlist.push_back(create_req<RequireAllIllegal>());
+            reqlist.push_back(create_req<RequireMate>());
             return {ColourBlack(), std::move(reqlist)};
         }
 
@@ -216,7 +233,7 @@ namespace blooto {
                 reqlist.push_back(create_req<RequireAny>());
             }
             reqlist.push_back(create_req<RequireAny>());
-            reqlist.push_back(create_req<RequireAllIllegal>());
+            reqlist.push_back(create_req<RequireMate>());
             return {ColourWhite(), std::move(reqlist)};
         }
 

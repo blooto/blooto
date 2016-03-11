@@ -84,10 +84,8 @@ namespace blooto {
                 ++num_results;
                 return {};
             }
-            result_type operator()(const Board &board) override {
+            result_type operator()(const Board &newboard) override {
                 if (num_results == 0) {
-                    Board newboard{board};
-                    newboard.flip_colour();
                     if (!threat_to_king(newboard)) // Stalemate
                         return {Failed::NotFound};
                 }
@@ -106,10 +104,8 @@ namespace blooto {
             result_type operator()(const Solution::list &) override {
                 return {Failed::NotFound};
             }
-            result_type operator()(const Board &board) override {
+            result_type operator()(const Board &newboard) override {
                 if (num_illegal > 0) {
-                    Board newboard{board};
-                    newboard.flip_colour();
                     if (!threat_to_king(newboard)) // Stalemate
                         return {Failed::NotFound};
                     return {};
@@ -137,17 +133,22 @@ namespace blooto {
                 return result;
             std::unique_ptr<Requirement> req{(*reqp)()};
             ++reqp;
-            for (Square from: board.can_move()) {
-                const PieceType &pt = *board.piecetype(from);
+            MoveColour colour{board.colour()};
+            BitBoard occupied{board.occupied()};
+            BitBoard can_move{board.can_move()};
+            BitBoard friendlies{board.friendlies()};
+            Board newboard{board};
+            newboard.flip_colour();
+            for (Square from: can_move) {
+                Board::PieceCode pc{newboard.take(from)};
+                const PieceType &pt = *pc.piecetype();
                 BitBoard moves_from{
-                    pt.moves(board.colour(), from, board.occupied()) &
-                    ~board.friendlies()
+                    pt.moves(colour, from, occupied) & ~friendlies
                 };
                 for (Square to: moves_from) {
-                    Board newboard{board};
-                    MoveColour colour{newboard.colour()};
-                    newboard.make_move(from, to);
-                    newboard.flip_colour();
+                    Board::PieceCode to_pc{newboard.at(to)};
+                    bool attack = to_pc.code();
+                    newboard.put(to, pc);
                     if (pt.can_be_promoted(colour, to)) {
                         for (auto p = Board::promotions().begin();
                              p != Board::promotions().end(); ++p)
@@ -162,7 +163,8 @@ namespace blooto {
                             if (r)
                                 return *r;
                             if (auto slp = boost::get<Solution::list>(&res))
-                                result.emplace_back(board.move(from, to, *p),
+                                result.emplace_back(Move(pt, from, to,
+                                                         attack, &*p),
                                                     std::move(*slp));
                         }
                     } else {
@@ -173,12 +175,14 @@ namespace blooto {
                         if (r)
                             return *r;
                         if (auto slp = boost::get<Solution::list>(&res))
-                            result.emplace_back(board.move(from, to),
+                            result.emplace_back(Move(pt, from, to, attack),
                                                 std::move(*slp));
                     }
+                    newboard.put(to, to_pc);
                 }
+                newboard.put(from, pc);
             }
-            Requirement::result_type r{(*req)(board)};
+            Requirement::result_type r{(*req)(newboard)};
             if (r)
                 return *r;
             return result;

@@ -162,6 +162,70 @@ namespace blooto {
                          colour_.opposite().to_piece_colour());
         }
 
+        //! Board's representation of piece at some square
+        class PieceCode {
+            std::uint8_t code_;
+            bool friendly_;
+            bool can_move_;
+
+        public:
+            //! Construct piececode from code and colour
+            //! @param code board-internal piece code
+            //! @param friendly true if this piece is friendly
+            //! @param can_move true if this piece can move
+            PieceCode(std::uint8_t code, bool friendly, bool can_move)
+            : code_{code}, friendly_{friendly}, can_move_{can_move} {}
+
+            //! Board-internal piece code
+            //! @return board-internal piece code
+            std::uint8_t code() const {return code_;}
+
+            //! Check whether this piece is friendly
+            //! @return true if this piece is friendly
+            bool friendly() const {return friendly_;}
+
+            //! Check whether this piece can move
+            //! @return true if this piece can move
+            bool can_move() const {return can_move_;}
+
+            //! Piece type
+            //! @return piecetype for this piececode (or nullptr if no piece)
+            const PieceType *piecetype() const {return piecetypes[code_];}
+        };
+
+        //! Piece code at given square
+        //! @param square square to look for piece
+        //! @return piececode for that square
+        PieceCode at(Square square) const {
+            return {
+                pieces_[code(square)],
+                friendlies_[square],
+                can_move_[square]
+            };
+        }
+
+        //! Remove piece from given square and return its piececode
+        //! @param square square to take piece from
+        //! @return piececode for piece taken
+        PieceCode take(Square square) {
+            PieceCode result{at(square)};
+            pieces_[code(square)] = 0;
+            occupied_ &= ~square;
+            can_move_ &= ~square;
+            friendlies_ &= ~square;
+            return result;
+        }
+
+        //! Put piece to given square
+        //! @param square square to put piece to
+        //! @param pc piececode for piece to put
+        void put(Square square, PieceCode pc) {
+            pieces_[code(square)] = pc.code();
+            occupied_.set(square, pc.code());
+            friendlies_.set(square, pc.friendly());
+            can_move_.set(square, pc.can_move());
+        }
+
         //! Check whether unfriendly king is at the square
         //! @param square square to check
         //! @return true if unfriendly king is at the square

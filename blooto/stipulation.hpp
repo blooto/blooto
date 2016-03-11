@@ -72,7 +72,7 @@ namespace blooto {
             }
         };
 
-        struct RequireAll: Requirement {
+        struct RequireAllOrMate: Requirement {
             unsigned num_results = 0;
             result_type operator()(Failed fail) override {
                 switch (fail) {
@@ -85,9 +85,7 @@ namespace blooto {
                 return {};
             }
             result_type operator()() override {
-                if (num_results > 0)
-                    return {};
-                return {Failed::NotFound};
+                return {};
             }
         };
 
@@ -188,7 +186,7 @@ namespace blooto {
             ReqFactoryList reqlist;
             for (unsigned i = 1; i < num_moves; ++i) {
                 reqlist.push_back(create_req<RequireAny>());
-                reqlist.push_back(create_req<RequireAll>());
+                reqlist.push_back(create_req<RequireAllOrMate>());
             }
             reqlist.push_back(create_req<RequireAny>());
             reqlist.push_back(create_req<RequireAllIllegal>());

@@ -81,6 +81,16 @@ namespace blooto {
             return data_ & (data_type(1) << static_cast<unsigned>(sq));
         };
 
+        //! Assign bit value at given square
+        //! @param sq square to assign value at
+        //! @param val boolean value to assign
+        void set(Square sq, bool val) {
+            if (val)
+                data_ |= data_type(1) << code(sq);
+            else
+                data_ &= ~(data_type(1) << code(sq));
+        }
+
         //! Unite BitBoard with another one
         //! @param rhs another BitBoard
         //! @return reference to self

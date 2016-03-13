@@ -122,7 +122,36 @@ namespace blooto {
             return false;
         }
 
-        static Requirement::Result solve(const Board &board,
+        class FlipColourSentry {
+            Board &board_;
+        public:
+            FlipColourSentry(Board &board): board_{board} {
+                board_.flip_colour();
+            }
+            ~FlipColourSentry() {board_.flip_colour();}
+        };
+
+        class PieceSentry {
+            Board &board_;
+            Square square_;
+            Board::PieceCode pc_;
+        public:
+            struct take {};
+            PieceSentry(Board &board, Square square)
+            : board_{board}, square_{square}, pc_{board.at(square)} {}
+            PieceSentry(Board &board, Square square, take)
+            : board_{board}, square_{square}, pc_{board.take(square)} {}
+            ~PieceSentry() {board_.put(square_, pc_);}
+            const Board::PieceCode &operator*() const {return pc_;}
+            Board::PieceCode &operator*() {return pc_;}
+            const Board::PieceCode *operator->() const {return &pc_;}
+            Board::PieceCode *operator->() {return &pc_;}
+        };
+
+        //! Solve problem with given requirement list.
+        //! Modifies board in place, but restores its contents
+        //! upon completion.
+        static Requirement::Result solve(Board &board,
                                          ReqFactoryListIterator reqp,
                                          ReqFactoryListIterator reqend)
         {
@@ -137,25 +166,24 @@ namespace blooto {
             BitBoard occupied{board.occupied()};
             BitBoard can_move{board.can_move()};
             BitBoard friendlies{board.friendlies()};
-            Board newboard{board};
-            newboard.flip_colour();
+            FlipColourSentry flipsentry{board};
             for (Square from: can_move) {
-                Board::PieceCode pc{newboard.take(from)};
-                const PieceType &pt = *pc.piecetype();
+                PieceSentry pc{board, from, PieceSentry::take()};
+                const PieceType &pt = *pc->piecetype();
                 BitBoard moves_from{
                     pt.moves(colour, from, occupied) & ~friendlies
                 };
                 for (Square to: moves_from) {
-                    Board::PieceCode to_pc{newboard.at(to)};
-                    bool attack = to_pc.code();
-                    newboard.put(to, pc);
+                    PieceSentry to_pc{board, to};
+                    bool attack = to_pc->code();
+                    board.put(to, *pc);
                     if (pt.can_be_promoted(colour, to)) {
                         for (auto p = Board::promotions().begin();
                              p != Board::promotions().end(); ++p)
                         {
-                            newboard.make_promotion(to, p);
+                            board.make_promotion(to, p);
                             Requirement::Result res{
-                                solve(newboard, reqp, reqend)
+                                solve(board, reqp, reqend)
                             };
                             Requirement::result_type r{
                                 boost::apply_visitor(*req, res)
@@ -168,7 +196,7 @@ namespace blooto {
                                                     std::move(*slp));
                         }
                     } else {
-                        Requirement::Result res{solve(newboard, reqp, reqend)};
+                        Requirement::Result res{solve(board, reqp, reqend)};
                         Requirement::result_type r{
                             boost::apply_visitor(*req, res)
                         };
@@ -178,11 +206,9 @@ namespace blooto {
                             result.emplace_back(Move(pt, from, to, attack),
                                                 std::move(*slp));
                     }
-                    newboard.put(to, to_pc);
                 }
-                newboard.put(from, pc);
             }
-            Requirement::result_type r{(*req)(newboard)};
+            Requirement::result_type r{(*req)(board)};
             if (r)
                 return *r;
             return result;
@@ -245,8 +271,9 @@ namespace blooto {
         //! @param board board to solve problem for
         //! @result list of solutions (empty if no solutions found)
         Solution::list solve(const Board &board) const {
+            Board newboard{board};
             Requirement::Result res{
-                solve(board, reqlist_.begin(), reqlist_.end())
+                solve(newboard, reqlist_.begin(), reqlist_.end())
             };
             if (auto slp = boost::get<Solution::list>(&res))
                 return std::move(*slp);

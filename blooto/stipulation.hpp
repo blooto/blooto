@@ -43,16 +43,6 @@ namespace blooto {
             virtual ~Requirement() {}
         };
 
-        template <typename ReqT> struct create_req {
-            std::unique_ptr<Requirement> operator()() const {
-                return std::unique_ptr<ReqT>{new ReqT};
-            }
-        };
-
-        using ReqFactory = std::function<std::unique_ptr<Requirement>()>;
-        using ReqFactoryList = std::list<ReqFactory>;
-        using ReqFactoryListIterator = ReqFactoryList::const_iterator;
-
         struct RequireAny: Requirement {
             unsigned num_results = 0;
             result_type operator()(Failed fail) override {
@@ -118,6 +108,24 @@ namespace blooto {
             }
         };
 
+        class Solver;
+
+        using SolverList = std::list<Solver>;
+        using SolverListIterator = SolverList::const_iterator;
+
+        class Solver {
+            using result_type = Requirement::Result;
+            using func_type = result_type(const Board &, SolverListIterator);
+            const func_type *funcp_;
+        public:
+            Solver(func_type *funcp): funcp_{funcp} {}
+            result_type operator()(const Board &board,
+                                   SolverListIterator solvp) const
+            {
+                return (*funcp_)(board, solvp);
+            }
+        };
+
         static inline bool threat_to_king(const Board &board) {
             for (Square from: board.can_move())
                 for (Square to: board.moves_from(from))
@@ -126,17 +134,24 @@ namespace blooto {
             return false;
         }
 
-        static Requirement::Result solve(const Board &board,
-                                         ReqFactoryListIterator reqp,
-                                         ReqFactoryListIterator reqend)
+        static Requirement::Result solver_end(const Board &board,
+                                              SolverListIterator solvp)
         {
             Solution::list result;
             if (threat_to_king(board))
                 return Failed::IllegalMove;
-            if (reqp == reqend)
-                return result;
-            std::unique_ptr<Requirement> req{(*reqp)()};
-            ++reqp;
+            return Solution::list{};
+        }
+
+        template <typename ReqT>
+        static Requirement::Result solver(const Board &board,
+                                          SolverListIterator solvp)
+        {
+            Solution::list result;
+            if (threat_to_king(board))
+                return Failed::IllegalMove;
+            ReqT req;
+            ++solvp;
             for (Square from: board.can_move()) {
                 const PieceType &pt = *board.piecetype(from);
                 BitBoard moves_from{
@@ -153,11 +168,9 @@ namespace blooto {
                              p != Board::promotions().end(); ++p)
                         {
                             newboard.make_promotion(to, p);
-                            Requirement::Result res{
-                                solve(newboard, reqp, reqend)
-                            };
+                            Requirement::Result res{(*solvp)(newboard, solvp)};
                             Requirement::result_type r{
-                                boost::apply_visitor(*req, res)
+                                boost::apply_visitor(req, res)
                             };
                             if (r)
                                 return *r;
@@ -166,9 +179,9 @@ namespace blooto {
                                                     std::move(*slp));
                         }
                     } else {
-                        Requirement::Result res{solve(newboard, reqp, reqend)};
+                        Requirement::Result res{(*solvp)(newboard, solvp)};
                         Requirement::result_type r{
-                            boost::apply_visitor(*req, res)
+                            boost::apply_visitor(req, res)
                         };
                         if (r)
                             return *r;
@@ -178,17 +191,17 @@ namespace blooto {
                     }
                 }
             }
-            Requirement::result_type r{(*req)(board)};
+            Requirement::result_type r{req(board)};
             if (r)
                 return *r;
             return result;
         }
 
         MoveColour first_move_colour_;
-        ReqFactoryList reqlist_;
+        SolverList solvlist_;
 
-        Stipulation(MoveColour first_move_colour, ReqFactoryList &&reqlist)
-        : first_move_colour_ {first_move_colour}, reqlist_{reqlist} {}
+        Stipulation(MoveColour first_move_colour, SolverList &&solvlist)
+        : first_move_colour_ {first_move_colour}, solvlist_{solvlist} {}
 
     public:
 
@@ -200,50 +213,52 @@ namespace blooto {
         //! @param num_moves number of moves
         //! @return stipulation
         static Stipulation directmate(unsigned num_moves) {
-            ReqFactoryList reqlist;
+            SolverList solvlist;
             for (unsigned i = 1; i < num_moves; ++i) {
-                reqlist.push_back(create_req<RequireAny>());
-                reqlist.push_back(create_req<RequireAllOrMate>());
+                solvlist.emplace_back(&solver<RequireAny>);
+                solvlist.emplace_back(&solver<RequireAllOrMate>);
             }
-            reqlist.push_back(create_req<RequireAny>());
-            reqlist.push_back(create_req<RequireMate>());
-            return {ColourWhite(), std::move(reqlist)};
+            solvlist.emplace_back(&solver<RequireAny>);
+            solvlist.emplace_back(&solver<RequireMate>);
+            solvlist.emplace_back(&solver_end);
+            return {ColourWhite(), std::move(solvlist)};
         }
 
         //! Create stipulation for helpmate
         //! @param num_moves number of moves
         //! @return stipulation
         static Stipulation helpmate(unsigned num_moves) {
-            ReqFactoryList reqlist;
+            SolverList solvlist;
             for (unsigned i = 0; i < num_moves; ++i) {
-                reqlist.push_back(create_req<RequireAny>());
-                reqlist.push_back(create_req<RequireAny>());
+                solvlist.emplace_back(&solver<RequireAny>);
+                solvlist.emplace_back(&solver<RequireAny>);
             }
-            reqlist.push_back(create_req<RequireMate>());
-            return {ColourBlack(), std::move(reqlist)};
+            solvlist.emplace_back(&solver<RequireMate>);
+            solvlist.emplace_back(&solver_end);
+            return {ColourBlack(), std::move(solvlist)};
         }
 
         //! Create stipulation for helpmate for uneven number of half-moves
         //! @param num_moves number of full moves
         //! @return stipulation
         static Stipulation helpmate_1(unsigned num_moves) {
-            ReqFactoryList reqlist;
+            SolverList solvlist;
             for (unsigned i = 0; i < num_moves; ++i) {
-                reqlist.push_back(create_req<RequireAny>());
-                reqlist.push_back(create_req<RequireAny>());
+                solvlist.emplace_back(&solver<RequireAny>);
+                solvlist.emplace_back(&solver<RequireAny>);
             }
-            reqlist.push_back(create_req<RequireAny>());
-            reqlist.push_back(create_req<RequireMate>());
-            return {ColourWhite(), std::move(reqlist)};
+            solvlist.emplace_back(&solver<RequireAny>);
+            solvlist.emplace_back(&solver<RequireMate>);
+            solvlist.emplace_back(&solver_end);
+            return {ColourWhite(), std::move(solvlist)};
         }
 
         //! Solve chess composition problem with given board
         //! @param board board to solve problem for
         //! @result list of solutions (empty if no solutions found)
         Solution::list solve(const Board &board) const {
-            Requirement::Result res{
-                solve(board, reqlist_.begin(), reqlist_.end())
-            };
+            const Solver &solv{solvlist_.front()};
+            Requirement::Result res{solv(board, solvlist_.begin())};
             if (auto slp = boost::get<Solution::list>(&res))
                 return std::move(*slp);
             else
@@ -255,3 +270,4 @@ namespace blooto {
 }
 
 #endif
+

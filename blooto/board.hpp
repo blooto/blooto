@@ -21,6 +21,7 @@
 #include <map>
 #include <initializer_list>
 #include <iterator>
+#include <utility>
 #include <iostream>
 
 #include <blooto/square.hpp>
@@ -86,9 +87,8 @@ namespace blooto {
 
         MoveColour colour_;
         std::array<std::uint8_t, 64> pieces_;
-        BitBoard occupied_;
-        BitBoard friendlies_;
-        BitBoard can_move_;
+        BitBoard friendlies_or_neutral_;
+        BitBoard unfriendlies_or_neutral_;
 
     public:
 
@@ -137,11 +137,14 @@ namespace blooto {
         void insert(const Piece &piece) {
             auto sq = static_cast<std::uint8_t>(piece.square());
             pieces_[sq] = PieceTypeCodes::get(piece.piecetype());
-            occupied_ |= piece.square();
             if (colour_.friendly(piece.colour()))
-                friendlies_ |= piece.square();
+                unfriendlies_or_neutral_ &= ~piece.square();
+            else
+                unfriendlies_or_neutral_ |= piece.square();
             if (colour_.can_move(piece.colour()))
-                can_move_ |= piece.square();
+                friendlies_or_neutral_ |= piece.square();
+            else
+                friendlies_or_neutral_ &= ~piece.square();
         }
 
         //! Type of pice at the square
@@ -157,8 +160,8 @@ namespace blooto {
         //! Behaviour is undefined is there is no piece at that square!
         Piece operator[](Square square) const {
             return Piece(square, *piecetype(square),
-                         friendlies_[square] ? colour_.to_piece_colour() :
-                         can_move_[square] ? PieceColour(ColourNeutral()) :
+                         friendlies()[square] ? colour_.to_piece_colour() :
+                         can_move()[square] ? PieceColour(ColourNeutral()) :
                          colour_.opposite().to_piece_colour());
         }
 
@@ -177,13 +180,17 @@ namespace blooto {
         void make_move(Square from, Square to) {
             pieces_[code(to)] = pieces_[code(from)];
             pieces_[code(from)] = 0;
-            occupied_ |= to;
-            occupied_ &= ~from;
-            can_move_ |= to;
-            can_move_ &= ~from;
-            if (friendlies_[from]) {
-                friendlies_ |= to;
-                friendlies_ &= ~from;
+            if (friendlies_or_neutral_[from]) {
+                friendlies_or_neutral_ |= to;
+                friendlies_or_neutral_ &= ~from;
+            } else {
+                friendlies_or_neutral_ &= ~to;
+            }
+            if (unfriendlies_or_neutral_[from]) {
+                unfriendlies_or_neutral_ |= to;
+                unfriendlies_or_neutral_ &= ~from;
+            } else {
+                unfriendlies_or_neutral_ &= ~to;
             }
         }
 
@@ -209,7 +216,7 @@ namespace blooto {
         //! @return bitboard of squares this piece can move to
         BitBoard moves_from(Square square) const {
             const PieceType &pt = *piecetype(square);
-            return pt.moves(colour_, square, occupied_) & ~friendlies_;
+            return pt.moves(colour_, square, occupied()) & ~friendlies();
         }
 
         //! Move a piece on this board
@@ -226,10 +233,7 @@ namespace blooto {
         //! Flip board colour
         void flip_colour() {
             colour_ = colour_.opposite();
-            const BitBoard old_friendlies = friendlies_;
-            const BitBoard old_can_move = can_move_;
-            friendlies_ = occupied_ & ~old_can_move;
-            can_move_ = occupied_ & ~old_friendlies;
+            std::swap(friendlies_or_neutral_, unfriendlies_or_neutral_);
         }
 
         //! Iterator to traverse pieces on the board
@@ -305,26 +309,30 @@ namespace blooto {
         //! Make iterator pointing to a piece at the first occupied square
         //! @return new iterator
         iterator begin() const {
-            return iterator(*this, occupied_.begin());
+            return iterator(*this, occupied().begin());
         }
 
         //! Make iterator pointing after the last occupoed square
         //! @return new iterator
         iterator end() const {
-            return iterator(*this, occupied_.end());
+            return iterator(*this, occupied().end());
         }
 
         //! Check board for emptiness
         //! @return true if board contains no pieces
-        bool empty() const {return occupied_.empty();}
+        bool empty() const {return occupied().empty();}
 
         //! BitBoard containing occupied squares
         //! @return bitboard of all occupied squares
-        BitBoard occupied() const {return occupied_;}
+        BitBoard occupied() const {
+            return friendlies_or_neutral_ | unfriendlies_or_neutral_;
+        }
 
         //! BitBoard containing squares occupied only by friendly pieces
         //! @return bitboard of squares occupied by friendly pieces
-        BitBoard friendlies() const {return friendlies_;}
+        BitBoard friendlies() const {
+            return friendlies_or_neutral_ & ~unfriendlies_or_neutral_;
+        }
 
         //! BitBoard containing pieces that can move.
         //! @return bitboard of pieces of this board that can move
@@ -336,7 +344,7 @@ namespace blooto {
         //!     ...
         //! }
         //! @endcode
-        BitBoard can_move() const {return can_move_;}
+        BitBoard can_move() const {return friendlies_or_neutral_;}
 
         //! Iterator over all possible promotions
         class promotions_iterator {

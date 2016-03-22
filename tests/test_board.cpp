@@ -167,6 +167,13 @@ BOOST_AUTO_TEST_CASE(test_board) {
                       (Piece{Square::H7,
                           KingType::instance,
                        ColourWhite()}));
+    BOOST_CHECK_EQUAL(board.piecetype(Square::B1), &BishopType::instance);
+    BOOST_CHECK_EQUAL(board.piecetype(Square::E2), &RookType::instance);
+    BOOST_CHECK_EQUAL(board.piecetype(Square::D3), &BishopType::instance);
+    BOOST_CHECK_EQUAL(board.piecetype(Square::F5), &BishopType::instance);
+    BOOST_CHECK_EQUAL(board.piecetype(Square::H7), &KingType::instance);
+    BOOST_CHECK(board.piecetype(Square::A1) == nullptr);
+    BOOST_CHECK(board.piecetype(Square::H8) == nullptr);
     BOOST_CHECK_EQUAL(board.make_move({BishopType::instance, Square::D3,
                                        Square::F5, true}),
                       &BishopType::instance);
@@ -241,6 +248,11 @@ BOOST_AUTO_TEST_CASE(test_board) {
                       (Piece{Square::F5,
                           BishopType::instance,
                        ColourWhite()}));
+    BOOST_CHECK_EQUAL(board.piecetype(Square::B1), &BishopType::instance);
+    BOOST_CHECK_EQUAL(board.piecetype(Square::E2), &RookType::instance);
+    BOOST_CHECK_EQUAL(board.piecetype(Square::F5), &BishopType::instance);
+    BOOST_CHECK(board.piecetype(Square::A1) == nullptr);
+    BOOST_CHECK(board.piecetype(Square::H8) == nullptr);
     board.flip_colour();
     std::initializer_list<Square> friendlies4{Square::E2, Square::G2};
     std::initializer_list<Square> can_move4{

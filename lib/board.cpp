@@ -18,8 +18,6 @@
 
 #include <blooto/board.hpp>
 
-constexpr const blooto::PieceType *blooto::Board::piecetypes[];
-
 std::istream &blooto::operator>>(std::istream &in, blooto::Board &board) {
     std::istream::sentry s(in, true);
     if (!s)

@@ -24,6 +24,19 @@
 #include <utility>
 #include <iostream>
 
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/size.hpp>
+#include <boost/mpl/begin.hpp>
+#include <boost/mpl/find.hpp>
+#include <boost/mpl/distance.hpp>
+#include <boost/mpl/if.hpp>
+#include <boost/mpl/int.hpp>
+#include <boost/mpl/less_equal.hpp>
+#include <boost/mpl/range_c.hpp>
+#include <boost/mpl/bool.hpp>
+#include <boost/mpl/fold.hpp>
+#include <boost/mpl/placeholders.hpp>
+
 #include <blooto/square.hpp>
 #include <blooto/bitboard.hpp>
 #include <blooto/piecetype.hpp>
@@ -41,40 +54,129 @@ namespace blooto {
 
     //! Chess board containing pieces at its squares
     class Board {
-        constexpr static const PieceType *piecetypes[] = {
-            nullptr, // code 0 means no piece
-            &PawnType::instance,
-            &BishopType::instance,
-            &RookType::instance,
-            &KnightType::instance,
-            &QueenType::instance,
-            &KingType::instance,
+
+        using piecetypes_t =
+            boost::mpl::vector<PawnType, BishopType, RookType,
+                               KnightType, QueenType, KingType>;
+
+        using numpieces = boost::mpl::size<piecetypes_t>::type;
+
+        template <typename PT> using piece_code =
+            boost::mpl::distance<boost::mpl::begin<piecetypes_t>::type,
+                                 typename boost::mpl::find<piecetypes_t,
+                                                           PT>::type>;
+
+        template <typename NB, typename N> struct find_nb:
+        boost::mpl::if_<boost::mpl::bool_<((1 << NB::value) < N::value)>,
+                        find_nb<typename NB::next, N>, NB>::type {};
+
+        template <typename N> using numbits = find_nb<boost::mpl::int_<0>, N>;
+
+        using bb_size = numbits<numpieces>::type;
+
+        // Let's hope that we won't have more than 2^32 pieces on single board.
+        using piececode_t =
+        boost::mpl::if_<
+            boost::mpl::less_equal<bb_size, boost::mpl::int_<8>>,
+            std::uint8_t,
+            boost::mpl::if_<
+                boost::mpl::less_equal<bb_size, boost::mpl::int_<16>>,
+                std::uint16_t,
+                std::uint32_t
+            >::type
+        >::type;
+
+        struct bb_storage_base {
+            void set(piececode_t, BitBoard) {}
+            piececode_t get(Square square) const {return 0;}
+            void move(Square, Square) {}
         };
 
-        class PieceTypeCodes {
-            using map_type = std::map<const PieceType *, std::uint8_t>;
-            map_type map_;
-            map_type::mapped_type king_code_;
-            template <size_t N>
-            PieceTypeCodes(const PieceType *const (&piecetypes)[N])
-            {
-                for (std::uint_fast8_t i = 1; i < N; ++i) {
-                    const PieceType *pt = piecetypes[i];
-                    map_.insert(map_type::value_type(pt, i));
-                    if (pt == &KingType::instance)
-                        king_code_ = i;
-                }
+        template <typename Base, typename N>
+        class bb_storage_unit: public Base {
+            BitBoard value_;
+            void set_internal(boost::mpl::true_, BitBoard bb) {value_ |= bb;}
+            void set_internal(boost::mpl::false_, BitBoard bb) {value_ &= ~bb;}
+            void set_internal(bool v, BitBoard bb) {
+                if (v)
+                    set_internal(boost::mpl::true_(), bb);
+                else
+                    set_internal(boost::mpl::false_(), bb);
             }
         public:
+            bb_storage_unit() {}
+            bb_storage_unit(const bb_storage_unit &other) = default;
+            bb_storage_unit(bb_storage_unit &&other) = default;
+            template <typename Transform>
+            bb_storage_unit(const bb_storage_unit &other,
+                            const Transform &transform)
+            : Base{other, transform}
+            , value_{transform(N(), other.value_)} {}
+            void set(piececode_t code, BitBoard bb) {
+                set_internal(code & (1 << N::value), bb);
+                Base::set(code, bb);
+            }
+            piececode_t get(Square square) const {
+                return
+                    (value_[square] ? (1 << N::value) : 0) | Base::get(square);
+            }
+            void move(Square from, Square to) {
+                if (value_[from]) {
+                    set_internal(boost::mpl::false_(), BitBoard{from});
+                    set_internal(boost::mpl::true_(), BitBoard{to});
+                } else {
+                    set_internal(boost::mpl::false_(), BitBoard{to});
+                }
+                Base::move(from, to);
+            }
+        };
+
+        using bb_storage =
+            boost::mpl::fold<boost::mpl::range_c<int, 0, bb_size::value>::type,
+                             bb_storage_base,
+                             bb_storage_unit<boost::mpl::_1,
+                                             boost::mpl::_2>>::type;
+
+        struct piece_registry_base {
+            const PieceType *piecetypes[numpieces::value];
+            using map_type = std::map<const PieceType *, piececode_t>;
+            map_type map_;
+        };
+
+        template <typename Base, typename PT>
+        struct piece_registry_unit: Base {
+            piece_registry_unit() {
+                using value_type = typename Base::map_type::value_type;
+                using piece_type = PT;
+                static const piece_type &instance = piece_type::instance;
+                static const piececode_t code = piece_code<piece_type>::value;
+                Base::map_.insert(value_type(&instance, code));
+                Base::piecetypes[code] = &instance;
+            }
+        };
+
+        using piece_registry =
+            boost::mpl::fold<piecetypes_t,
+                             piece_registry_base,
+                             piece_registry_unit<boost::mpl::_1,
+                                                 boost::mpl::_2>>::type;
+
+        class PieceTypeCodes: piece_registry {
+            PieceTypeCodes() {}
+        public:
+            using piecetypes_t = const PieceType *const(&)[numpieces::value];
             static const PieceTypeCodes &instance() {
-                static PieceTypeCodes inst{piecetypes};
+                static PieceTypeCodes inst;
                 return inst;
             }
-            static std::uint8_t get(const PieceType &pt) {
-                return instance().map_.find(&pt)->second;
+            static piececode_t get(const PieceType &pt) {
+                return instance().piece_registry::map_.find(&pt)->second;
             }
-            static std::uint8_t king_code() {
-                return instance().king_code_;
+            static constexpr piececode_t king_code() {
+                return piece_code<KingType>::value;
+            }
+            static piecetypes_t piecetypes() {
+                return instance().piece_registry::piecetypes;
             }
         };
 
@@ -86,18 +188,18 @@ namespace blooto {
         };
 
         MoveColour colour_;
-        std::array<std::uint8_t, 64> pieces_;
+        bb_storage pieces_;
         BitBoard friendlies_or_neutral_;
         BitBoard unfriendlies_or_neutral_;
 
     public:
 
         //! Construct empty board
-        Board(): colour_{ColourWhite()} {pieces_.fill(0);}
+        Board(): colour_{ColourWhite()} {}
 
         //! Construct empty board with specified move colour
         //! @param colour colour for the next move
-        Board(MoveColour colour): colour_{colour} {pieces_.fill(0);}
+        Board(MoveColour colour): colour_{colour} {}
 
         //! Default copy constructor
         //! @param other board to construct from
@@ -112,7 +214,6 @@ namespace blooto {
         Board(const std::initializer_list<Piece> &pieces)
         : colour_{ColourWhite()}
         {
-            pieces_.fill(0);
             for (const auto &p: pieces)
                 insert(p);
         }
@@ -123,7 +224,6 @@ namespace blooto {
         Board(MoveColour colour, const std::initializer_list<Piece> &pieces)
         : colour_{colour}
         {
-            pieces_.fill(0);
             for (const auto &p: pieces)
                 insert(p);
         }
@@ -135,8 +235,8 @@ namespace blooto {
         //! Add a piece to this board
         //! @param piece piece to add
         void insert(const Piece &piece) {
-            auto sq = static_cast<std::uint8_t>(piece.square());
-            pieces_[sq] = PieceTypeCodes::get(piece.piecetype());
+            pieces_.set(PieceTypeCodes::get(piece.piecetype()),
+                        BitBoard{piece.square()});
             if (colour_.friendly(piece.colour()))
                 unfriendlies_or_neutral_ &= ~piece.square();
             else
@@ -151,7 +251,9 @@ namespace blooto {
         //! @param square square
         //! @return pointer to type of the piece at that square (or nullptr)
         const PieceType *piecetype(Square square) const {
-            return piecetypes[pieces_[code(square)]];
+            if (!occupied()[square])
+                return nullptr;
+            return PieceTypeCodes::piecetypes()[pieces_.get(square)];
         }
 
         //! Piece at the square
@@ -171,15 +273,14 @@ namespace blooto {
         bool is_unfriendly_king(Square square) const {
             return
                 !can_move()[square] &&
-                pieces_[code(square)] == PieceTypeCodes::king_code();
+                pieces_.get(square) == PieceTypeCodes::king_code();
         }
 
         //! Move a piece on this board
         //! @param from source square where the piece to be moved is located
         //! @param to destination square where the piece to be moved to
         void make_move(Square from, Square to) {
-            pieces_[code(to)] = pieces_[code(from)];
-            pieces_[code(from)] = 0;
+            pieces_.move(from, to);
             if (friendlies_or_neutral_[from]) {
                 friendlies_or_neutral_ |= to;
                 friendlies_or_neutral_ &= ~from;
@@ -376,12 +477,14 @@ namespace blooto {
             constexpr promotions_iterator() noexcept: iter_{nullptr} {}
 
             //! Construct promotions_iterator pointing to the first promotion
-            promotions_iterator(begin): iter_{std::begin(piecetypes)} {
+            promotions_iterator(begin)
+            : iter_{std::begin(PieceTypeCodes::piecetypes())} {
                 ++*this;
             }
 
             //! Construct promotions_iterator pointing after the last promotion
-            promotions_iterator(end): iter_{std::end(piecetypes)} {}
+            promotions_iterator(end)
+            : iter_{std::end(PieceTypeCodes::piecetypes())} {}
 
             //! Promotion this iterator points to
             //! @return promotion piecetype
@@ -393,7 +496,7 @@ namespace blooto {
             //! @return reference to self
             promotions_iterator &operator++() {
                 ++iter_;
-                while (iter_ != std::end(piecetypes) &&
+                while (iter_ != std::end(PieceTypeCodes::piecetypes()) &&
                     !(*iter_)->can_be_promotion())
                     ++iter_;
                 return *this;
@@ -426,7 +529,9 @@ namespace blooto {
 
             //! Piece type code
             //! @return code of piece type
-            constexpr std::uint8_t code() const {return iter_ - piecetypes;}
+            piececode_t code() const {
+                return iter_ - PieceTypeCodes::piecetypes();
+            }
 
         };
 
@@ -483,14 +588,14 @@ namespace blooto {
         //! @param square square where the piece to be promoted is located
         //! @param p iterator pointing to promotion to be performed
         void make_promotion(Square square, promotions_iterator p) {
-            pieces_[code(square)] = p.code();
+            pieces_.set(p.code(), BitBoard{square});
         }
 
         //! Move a promotion on this board
         //! @param square square where the piece to be promoted is located
         //! @param promotion piece type to use as promotion
         void make_promotion(Square square, const PieceType &promotion) {
-            pieces_[code(square)] = PieceTypeCodes::get(promotion);
+            pieces_.set(PieceTypeCodes::get(promotion), BitBoard{square});
         }
 
         //! Iterator over all possible (semi-legal) moves on the board
@@ -532,8 +637,9 @@ namespace blooto {
                     BitBoard moves = board.moves_from(*from_iter_);
                     if (!moves.empty()) {
                         to_iter_ = moves.begin();
-                        std::uint8_t pcidx = board_.pieces_[code(*from_iter_)];
-                        const PieceType &pt = *piecetypes[pcidx];
+                        piececode_t pcidx = board_.pieces_.get(*from_iter_);
+                        const PieceType &pt =
+                            *PieceTypeCodes::piecetypes()[pcidx];
                         if (pt.can_be_promoted(board_.colour(), *to_iter_))
                             promo_iter_ = promotions_begin();
                         else
@@ -575,8 +681,9 @@ namespace blooto {
                         return *this;
                     to_iter_ = board_.moves_from(*from_iter_).begin();
                 }
-                std::uint8_t pcidx = board_.pieces_[code(*from_iter_)];
-                const PieceType &pt = *piecetypes[pcidx];
+                piececode_t pcidx = board_.pieces_.get(*from_iter_);
+                const PieceType &pt =
+                    *PieceTypeCodes::piecetypes()[pcidx];
                 if (pt.can_be_promoted(board_.colour(), *to_iter_))
                     promo_iter_ = promotions_begin();
                 else

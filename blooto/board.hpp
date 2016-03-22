@@ -530,7 +530,7 @@ namespace blooto {
             //! Piece type code
             //! @return code of piece type
             piececode_t code() const {
-                return iter_ - PieceTypeCodes::piecetypes();
+                return iter_ - std::begin(PieceTypeCodes::piecetypes());
             }
 
         };

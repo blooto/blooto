@@ -123,12 +123,7 @@ namespace blooto {
                     (value_[square] ? (1 << N::value) : 0) | Base::get(square);
             }
             void move(Square from, Square to) {
-                if (value_[from]) {
-                    set_internal(boost::mpl::false_(), BitBoard{from});
-                    set_internal(boost::mpl::true_(), BitBoard{to});
-                } else {
-                    set_internal(boost::mpl::false_(), BitBoard{to});
-                }
+                set_internal(value_[from], BitBoard{to});
                 Base::move(from, to);
             }
         };
@@ -274,7 +269,7 @@ namespace blooto {
         //! @return true if unfriendly king is at the square
         bool is_unfriendly_king(Square square) const {
             return
-                !can_move()[square] &&
+                unfriendlies()[square] &&
                 pieces_.get(square) == PieceTypeCodes::king_code();
         }
 

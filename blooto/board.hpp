@@ -437,6 +437,18 @@ namespace blooto {
             return friendlies_or_neutral_ & ~unfriendlies_or_neutral_;
         }
 
+        //! BitBoard containing squares occupied only by unfriendly pieces
+        //! @return bitboard of squares occupied by unfriendly pieces
+        BitBoard unfriendlies() const {
+            return unfriendlies_or_neutral_ & ~friendlies_or_neutral_;
+        }
+
+        //! BitBoard containing squares occupied only by neutral pieces
+        //! @return bitboard of squares occupied by neutral pieces
+        BitBoard neutrals() const {
+            return friendlies_or_neutral_ & unfriendlies_or_neutral_;
+        }
+
         //! BitBoard containing pieces that can move.
         //! @return bitboard of pieces of this board that can move
         //! Can be used like this:

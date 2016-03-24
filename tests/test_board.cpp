@@ -45,6 +45,8 @@ BOOST_AUTO_TEST_CASE(test_board) {
         Square::B1, Square::G2, Square::D3, Square::F5, Square::H7
     };
     std::initializer_list<Square> friendlies{Square::D3, Square::H7};
+    std::initializer_list<Square> unfriendlies{Square::G2, Square::F5};
+    std::initializer_list<Square> neutrals{Square::B1};
     std::initializer_list<Square> pieces_can_move{
         Square::B1, Square::D3, Square::H7
     };
@@ -61,6 +63,14 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.friendlies().end(),
                                   friendlies.begin(),
                                   friendlies.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.unfriendlies().begin(),
+                                  board.unfriendlies().end(),
+                                  unfriendlies.begin(),
+                                  unfriendlies.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.neutrals().begin(),
+                                  board.neutrals().end(),
+                                  neutrals.begin(),
+                                  neutrals.end());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.can_move().begin(),
                                   board.can_move().end(),
                                   pieces_can_move.begin(),

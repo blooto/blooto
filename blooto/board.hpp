@@ -54,11 +54,13 @@ namespace blooto {
 
     //! Chess board containing pieces at its squares
     class Board {
-
+    public:
+        //! Type sequence containing all possible piece types on this board
         using piecetypes_t =
             boost::mpl::vector<PawnType, BishopType, RookType,
                                KnightType, QueenType, KingType>;
 
+    private:
         using numpieces = boost::mpl::size<piecetypes_t>::type;
 
         template <typename PT> using piece_code =

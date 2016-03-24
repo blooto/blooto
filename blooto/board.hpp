@@ -68,6 +68,9 @@ namespace blooto {
                                  typename boost::mpl::find<piecetypes_t,
                                                            PT>::type>;
 
+        template <typename PT, typename N> using piece_bit =
+            boost::mpl::bool_<((1 << N::value) & piece_code<PT>::value)>;
+
         template <typename NB, typename N> struct find_nb:
         boost::mpl::if_<boost::mpl::bool_<((1 << NB::value) < N::value)>,
                         find_nb<typename NB::next, N>, NB>::type {};
@@ -89,7 +92,12 @@ namespace blooto {
         >::type;
 
         struct bb_storage_base {
+            template <bool B> void set(boost::mpl::bool_<B>, BitBoard) {}
+            template <typename PT> void set(BitBoard) {}
             void set(piececode_t, BitBoard) {}
+            template <typename PT> BitBoard get() const {
+                return ~BitBoard{};
+            }
             piececode_t get(Square square) const {return 0;}
             void move(Square, Square) {}
         };
@@ -105,6 +113,8 @@ namespace blooto {
                 else
                     set_internal(boost::mpl::false_(), bb);
             }
+            BitBoard get_internal(boost::mpl::true_) const {return value_;}
+            BitBoard get_internal(boost::mpl::false_) const {return ~value_;}
         public:
             bb_storage_unit() {}
             bb_storage_unit(const bb_storage_unit &other) = default;
@@ -114,9 +124,22 @@ namespace blooto {
                             const Transform &transform)
             : Base{other, transform}
             , value_{transform(N(), other.value_)} {}
+            template <bool B> void set(boost::mpl::bool_<B>, BitBoard bb) {
+                set_internal(boost::mpl::bool_<B>(), bb);
+                Base::set(boost::mpl::bool_<B>(), bb);
+            }
+            template <typename PT> void set(BitBoard bb) {
+                set_internal(piece_bit<PT, N>(), bb);
+                Base::template set<PT>(bb);
+            }
             void set(piececode_t code, BitBoard bb) {
                 set_internal(code & (1 << N::value), bb);
                 Base::set(code, bb);
+            }
+            template <typename PT> BitBoard get() const {
+                return
+                    get_internal(piece_bit<PT, N>()) &
+                    Base::template get<PT>();
             }
             piececode_t get(Square square) const {
                 return
@@ -455,6 +478,50 @@ namespace blooto {
         //! }
         //! @endcode
         BitBoard can_move() const {return friendlies_or_neutral_;}
+
+        //! BitBoard containing all pieces of given type PT
+        //! @return bitboard of squares possibly occupied by pieces of type PT
+        //! Warning: may contain empty pieces as well, so it must be
+        //! intersected with bitboard of occupied pieces
+        //! (or friendly pieces, or pieces that can move).
+        template <typename PT> BitBoard pieces() const {
+            return pieces_.get<PT>();
+        }
+
+        //! Remove a piece from square
+        //! @param square square to remove piece from
+        void take_piece(Square square) {
+            friendlies_or_neutral_ &= ~square;
+            unfriendlies_or_neutral_ &= ~square;
+        }
+
+        //! Put friendly piece of type PT to square
+        //! @param square square to put piece to
+        template <typename PT>
+        void put_piece(Square square, boost::mpl::false_) {
+            pieces_.set<PT>(BitBoard{square});
+            friendlies_or_neutral_ |= square;
+            unfriendlies_or_neutral_ &= ~square;
+        }
+
+        //! Put neutral piece of type PT to square
+        //! @param square square to put piece to
+        template <typename PT>
+        void put_piece(Square square, boost::mpl::true_) {
+            pieces_.set<PT>(BitBoard{square});
+            friendlies_or_neutral_ |= square;
+            unfriendlies_or_neutral_ |= square;
+        }
+
+        //! Put friendly or neutral piece of type PT to square
+        //! @param square square to put piece to
+        //! @param neutral true if piece is neutral, false otherwise
+        template <typename PT> void put_piece(Square square, bool neutral) {
+            if (neutral)
+                put_piece<PT>(square, boost::mpl::true_());
+            else
+                put_piece<PT>(square, boost::mpl::false_());
+        }
 
         //! Iterator over all possible promotions
         class promotions_iterator {

@@ -50,6 +50,9 @@ BOOST_AUTO_TEST_CASE(test_board) {
     std::initializer_list<Square> pieces_can_move{
         Square::B1, Square::D3, Square::H7
     };
+    std::initializer_list<Square> pawns{Square::G2};
+    std::initializer_list<Square> bishops{Square::B1, Square::D3, Square::F5};
+    std::initializer_list<Square> kings{Square::H7};
     Board board{pieces};
     BOOST_CHECK(!board.empty());
     BOOST_CHECK_EQUAL(board.colour(), ColourWhite());
@@ -75,6 +78,21 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.can_move().end(),
                                   pieces_can_move.begin(),
                                   pieces_can_move.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        (board.pieces<PawnType>() & board.occupied()).begin(),
+        (board.pieces<PawnType>() & board.occupied()).end(),
+        pawns.begin(), pawns.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        (board.pieces<BishopType>() & board.occupied()).begin(),
+        (board.pieces<BishopType>() & board.occupied()).end(),
+        bishops.begin(), bishops.end());
+    BOOST_CHECK((board.pieces<RookType>() & board.occupied()).empty());
+    BOOST_CHECK((board.pieces<KnightType>() & board.occupied()).empty());
+    BOOST_CHECK((board.pieces<QueenType>() & board.occupied()).empty());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        (board.pieces<KingType>() & board.occupied()).begin(),
+        (board.pieces<KingType>() & board.occupied()).end(),
+        kings.begin(), kings.end());
     std::string board_str1{"Neutral Bb1 White Bd3 Kh7 Black Pg2 Bf5"};
     Board board_expected1{boost::lexical_cast<Board>(board_str1)};
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
@@ -104,6 +122,9 @@ BOOST_AUTO_TEST_CASE(test_board) {
     BOOST_CHECK_EQUAL_COLLECTIONS(board.moves().begin(), board.moves().end(),
                                   moves1.begin(), moves1.end());
     board.insert(Piece{Square::E2, RookType::instance, ColourBlack()});
+    Board board2{board};
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
+                                  board2.begin(), board2.end());
     BOOST_CHECK(!board.empty());
     std::initializer_list<Piece> pieces2{
         {Square::B1, BishopType::instance, ColourNeutral()},
@@ -187,6 +208,10 @@ BOOST_AUTO_TEST_CASE(test_board) {
     BOOST_CHECK_EQUAL(board.make_move({BishopType::instance, Square::D3,
                                        Square::F5, true}),
                       &BishopType::instance);
+    board2.take_piece(Square::D3);
+    board2.put_piece<BishopType>(Square::F5, false);
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
+                                  board2.begin(), board2.end());
     std::initializer_list<Piece> pieces3{
         {Square::B1, BishopType::instance, ColourNeutral()},
         {Square::E2, RookType::instance, ColourBlack()},
@@ -201,6 +226,10 @@ BOOST_AUTO_TEST_CASE(test_board) {
     std::initializer_list<Square> can_move3{
         Square::B1, Square::F5, Square::H7
     };
+    std::initializer_list<Square> pawns3{Square::G2};
+    std::initializer_list<Square> bishops3{Square::B1, Square::F5};
+    std::initializer_list<Square> rooks3{Square::E2};
+    std::initializer_list<Square> kings3{Square::H7};
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
                                   pieces3.begin(), pieces3.end());
     BOOST_CHECK_EQUAL_COLLECTIONS(board.occupied().begin(),
@@ -215,6 +244,24 @@ BOOST_AUTO_TEST_CASE(test_board) {
                                   board.can_move().end(),
                                   can_move3.begin(),
                                   can_move3.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        (board.pieces<PawnType>() & board.occupied()).begin(),
+        (board.pieces<PawnType>() & board.occupied()).end(),
+        pawns3.begin(), pawns3.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        (board.pieces<BishopType>() & board.occupied()).begin(),
+        (board.pieces<BishopType>() & board.occupied()).end(),
+        bishops3.begin(), bishops3.end());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        (board.pieces<RookType>() & board.occupied()).begin(),
+        (board.pieces<RookType>() & board.occupied()).end(),
+        rooks3.begin(), rooks3.end());
+    BOOST_CHECK((board.pieces<KnightType>() & board.occupied()).empty());
+    BOOST_CHECK((board.pieces<QueenType>() & board.occupied()).empty());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        (board.pieces<KingType>() & board.occupied()).begin(),
+        (board.pieces<KingType>() & board.occupied()).end(),
+        kings3.begin(), kings3.end());
     std::string board_str3{"Neutral Bb1 White Bf5 Kh7 Black Re2 Pg2"};
     Board board_expected3{boost::lexical_cast<Board>(board_str3)};
     BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
@@ -264,6 +311,7 @@ BOOST_AUTO_TEST_CASE(test_board) {
     BOOST_CHECK(board.piecetype(Square::A1) == nullptr);
     BOOST_CHECK(board.piecetype(Square::H8) == nullptr);
     board.flip_colour();
+    board2.flip_colour();
     std::initializer_list<Square> friendlies4{Square::E2, Square::G2};
     std::initializer_list<Square> can_move4{
         Square::B1, Square::E2, Square::G2
@@ -312,6 +360,10 @@ BOOST_AUTO_TEST_CASE(test_board) {
     BOOST_CHECK_EQUAL_COLLECTIONS(board.moves().begin(), board.moves().end(),
                                   moves4.begin(), moves4.end());
     board.make_move(board.move(Square::G2, Square::G1, KnightType::instance));
+    board2.take_piece(Square::G2);
+    board2.put_piece<KnightType>(Square::G1, false);
+    BOOST_CHECK_EQUAL_COLLECTIONS(board.begin(), board.end(),
+                                  board2.begin(), board2.end());
     std::initializer_list<Piece> pieces5{
         {Square::B1, BishopType::instance, ColourNeutral()},
         {Square::G1, KnightType::instance, ColourBlack()},

@@ -126,6 +126,94 @@ namespace blooto {
             }
         };
 
+        template <typename ReqT> struct SolverFuncBase {
+            static Requirement::result_type call(const Board &board,
+                                                 SolverListIterator solvp,
+                                                 ReqT &req,
+                                                 Solution::list &result)
+            {
+                return {};
+            }
+        };
+
+        template <typename ReqT, typename Base, typename PT>
+        struct SolverFuncUnit: Base {
+            static Requirement::result_type call(const Board &board,
+                                                 SolverListIterator solvp,
+                                                 ReqT &req,
+                                                 Solution::list &result) {
+                BitBoard pieces_bb{board.can_move() & board.pieces<PT>()};
+                BitBoard neutrals_bb{board.neutrals()};
+                for (Square from: pieces_bb) {
+                    bool neutral = neutrals_bb[from];
+                    BitBoard moves_from{
+                        PT::instance.moves(board.colour(), from,
+                                           board.occupied()) &
+                                           ~board.friendlies()
+                    };
+                    for (Square to: moves_from) {
+                        Board newboard{board};
+                        MoveColour colour{newboard.colour()};
+                        newboard.take_piece(from);
+                        newboard.put_piece<PT>(to, neutral);
+                        newboard.flip_colour();
+                        if (PT::instance.can_be_promoted(colour, to)) {
+                            for (auto p = Board::promotions().begin();
+                                 p != Board::promotions().end(); ++p)
+                            {
+                                newboard.make_promotion(to, p);
+                                Requirement::Result res{
+                                    (*solvp)(newboard, solvp)
+                                };
+                                Requirement::result_type r{
+                                    boost::apply_visitor(req, res)
+                                };
+                                if (r)
+                                    return r;
+                                if (auto slp = boost::get<Solution::list>(&res))
+                                    result.emplace_back(
+                                        Move{
+                                            PT::instance,
+                                            from, to,
+                                            board.occupied()[to],
+                                            &*p
+                                        },
+                                        std::move(*slp)
+                                    );
+                            }
+                        } else {
+                            Requirement::Result res{
+                                (*solvp)(newboard, solvp)
+                            };
+                            Requirement::result_type r{
+                                boost::apply_visitor(req, res)
+                            };
+                            if (r)
+                                return *r;
+                            if (auto slp = boost::get<Solution::list>(&res))
+                                result.emplace_back(
+                                    Move{
+                                        PT::instance,
+                                        from, to,
+                                        board.occupied()[to]
+                                    },
+                                    std::move(*slp)
+                                );
+                        }
+                    }
+                }
+                return Base::call(board, solvp, req, result);
+            }
+        };
+
+        template <typename ReqT>
+        using SolverFunc =
+            typename boost::mpl::fold<Board::piecetypes_t,
+                                      SolverFuncBase<ReqT>,
+                                      SolverFuncUnit<ReqT,
+                                                     boost::mpl::_1,
+                                                     boost::mpl::_2>>::type;
+
         static inline bool threat_to_king(const Board &board) {
             for (Square from: board.can_move())
                 for (Square to: board.moves_from(from))
@@ -147,51 +235,18 @@ namespace blooto {
         static Requirement::Result solver(const Board &board,
                                           SolverListIterator solvp)
         {
-            Solution::list result;
             if (threat_to_king(board))
                 return Failed::IllegalMove;
+
             ReqT req;
             ++solvp;
-            for (Square from: board.can_move()) {
-                const PieceType &pt = *board.piecetype(from);
-                BitBoard moves_from{
-                    pt.moves(board.colour(), from, board.occupied()) &
-                    ~board.friendlies()
-                };
-                for (Square to: moves_from) {
-                    Board newboard{board};
-                    MoveColour colour{newboard.colour()};
-                    newboard.make_move(from, to);
-                    newboard.flip_colour();
-                    if (pt.can_be_promoted(colour, to)) {
-                        for (auto p = Board::promotions().begin();
-                             p != Board::promotions().end(); ++p)
-                        {
-                            newboard.make_promotion(to, p);
-                            Requirement::Result res{(*solvp)(newboard, solvp)};
-                            Requirement::result_type r{
-                                boost::apply_visitor(req, res)
-                            };
-                            if (r)
-                                return *r;
-                            if (auto slp = boost::get<Solution::list>(&res))
-                                result.emplace_back(board.move(from, to, *p),
-                                                    std::move(*slp));
-                        }
-                    } else {
-                        Requirement::Result res{(*solvp)(newboard, solvp)};
-                        Requirement::result_type r{
-                            boost::apply_visitor(req, res)
-                        };
-                        if (r)
-                            return *r;
-                        if (auto slp = boost::get<Solution::list>(&res))
-                            result.emplace_back(board.move(from, to),
-                                                std::move(*slp));
-                    }
-                }
-            }
-            Requirement::result_type r{req(board)};
+            Solution::list result;
+            Requirement::result_type r{
+                SolverFunc<ReqT>::call(board, solvp, req, result)
+            };
+            if (r)
+                return *r;
+            r = req(board);
             if (r)
                 return *r;
             return result;

@@ -48,24 +48,6 @@ BOOST_AUTO_TEST_CASE(test_stipulation_directmate) {
         const Solution::list &sl2 = p1->next();
         Solution::list::const_iterator p2 = sl2.begin();
         BOOST_CHECK(p2 != sl2.end());
-        BOOST_CHECK_EQUAL(&p2->move().piecetype(), &PawnType::instance);
-        BOOST_CHECK_EQUAL(p2->move().from(), Square::G7);
-        BOOST_CHECK_EQUAL(p2->move().to(), Square::H6);
-        BOOST_CHECK(p2->move().attack());
-        {
-            const Solution::list &sl3 = p2->next();
-            Solution::list::const_iterator p3 = sl3.begin();
-            BOOST_CHECK(p3 != sl3.end());
-            BOOST_CHECK_EQUAL(&p3->move().piecetype(), &PawnType::instance);
-            BOOST_CHECK_EQUAL(p3->move().from(), Square::G6);
-            BOOST_CHECK_EQUAL(p3->move().to(), Square::G7);
-            BOOST_CHECK(!p3->move().attack());
-            BOOST_CHECK(p3->next().empty());
-            ++p3;
-            BOOST_CHECK(p3 == sl3.end());
-        }
-        ++p2;
-        BOOST_CHECK(p2 != sl2.end());
         BOOST_CHECK_EQUAL(&p2->move().piecetype(), &BishopType::instance);
         BOOST_CHECK_EQUAL(p2->move().from(), Square::G8);
         BOOST_CHECK_EQUAL(p2->move().to(), Square::A2);
@@ -168,6 +150,24 @@ BOOST_AUTO_TEST_CASE(test_stipulation_directmate) {
             BOOST_CHECK_EQUAL(p3->move().from(), Square::H6);
             BOOST_CHECK_EQUAL(p3->move().to(), Square::H7);
             BOOST_CHECK(p3->move().attack());
+            BOOST_CHECK(p3->next().empty());
+            ++p3;
+            BOOST_CHECK(p3 == sl3.end());
+        }
+        ++p2;
+        BOOST_CHECK(p2 != sl2.end());
+        BOOST_CHECK_EQUAL(&p2->move().piecetype(), &PawnType::instance);
+        BOOST_CHECK_EQUAL(p2->move().from(), Square::G7);
+        BOOST_CHECK_EQUAL(p2->move().to(), Square::H6);
+        BOOST_CHECK(p2->move().attack());
+        {
+            const Solution::list &sl3 = p2->next();
+            Solution::list::const_iterator p3 = sl3.begin();
+            BOOST_CHECK(p3 != sl3.end());
+            BOOST_CHECK_EQUAL(&p3->move().piecetype(), &PawnType::instance);
+            BOOST_CHECK_EQUAL(p3->move().from(), Square::G6);
+            BOOST_CHECK_EQUAL(p3->move().to(), Square::G7);
+            BOOST_CHECK(!p3->move().attack());
             BOOST_CHECK(p3->next().empty());
             ++p3;
             BOOST_CHECK(p3 == sl3.end());

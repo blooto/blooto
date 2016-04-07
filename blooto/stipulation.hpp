@@ -214,12 +214,47 @@ namespace blooto {
                                                      boost::mpl::_1,
                                                      boost::mpl::_2>>::type;
 
-        static inline bool threat_to_king(const Board &board) {
-            for (Square from: board.can_move())
-                for (Square to: board.moves_from(from))
-                    if (board.is_unfriendly_king(to))
+        class ThreatFuncBase {
+            const Board &board_;
+            const BitBoard unfriendly_kings_;
+        public:
+            ThreatFuncBase(const Board &board)
+            : board_{board}
+            , unfriendly_kings_{board.pieces<KingType>() & board.unfriendlies()}
+            {}
+            const Board &board() const {return board_;}
+            const BitBoard unfriendly_kings() const {return unfriendly_kings_;}
+            bool operator()() const {return false;}
+        };
+
+        template <typename Base, typename PT> struct ThreatFuncUnit: Base {
+            using Base::Base;
+            using Base::board;
+            using Base::unfriendly_kings;
+            bool operator()() const {
+                BitBoard pieces_bb{
+                    board().can_move() & board().template pieces<PT>()
+                };
+                for (Square from: pieces_bb) {
+                    BitBoard moves_from{
+                        PT::instance.moves(board().colour(), from,
+                                           board().occupied())
+                    };
+                    if (!(moves_from & unfriendly_kings()).empty())
                         return true;
-            return false;
+                }
+                return Base::operator()();
+            }
+        };
+
+        using ThreatFunc =
+            typename boost::mpl::fold<Board::piecetypes_t,
+                                      ThreatFuncBase,
+                                      ThreatFuncUnit<boost::mpl::_1,
+                                                     boost::mpl::_2>>::type;
+
+        static inline bool threat_to_king(const Board &board) {
+            return ThreatFunc(board)();
         }
 
         static Requirement::Result solver_end(const Board &board,

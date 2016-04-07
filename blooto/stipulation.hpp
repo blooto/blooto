@@ -126,11 +126,33 @@ namespace blooto {
             }
         };
 
-        template <typename ReqT> struct SolverFuncBase {
-            static Requirement::result_type call(const Board &board,
-                                                 SolverListIterator solvp,
-                                                 ReqT &req,
-                                                 Solution::list &result)
+        template <typename ReqT> class SolverFuncBase {
+            const Board &board_;
+            const BitBoard friendlies_;
+            const BitBoard neutrals_;
+            const BitBoard occupied_;
+        public:
+            constexpr SolverFuncBase(const Board &board)
+            : board_{board}
+            , friendlies_{board.friendlies()}
+            , neutrals_{board.neutrals()}
+            , occupied_{board.occupied()} {}
+            constexpr const Board &board() const {return board_;}
+            constexpr const BitBoard friendlies() const {return friendlies_;}
+            constexpr const BitBoard neutrals() const {return neutrals_;}
+            constexpr const BitBoard occupied() const {return occupied_;}
+
+            constexpr BitBoard pieces_can_move(boost::mpl::false_) const {
+                return friendlies();
+            }
+
+            constexpr BitBoard pieces_can_move(boost::mpl::true_) const {
+                return neutrals();
+            }
+
+            Requirement::result_type operator()(SolverListIterator solvp,
+                                                ReqT &req,
+                                                Solution::list &result) const
             {
                 return {};
             }
@@ -139,36 +161,32 @@ namespace blooto {
         template <typename ReqT, typename Base, typename PT>
         class SolverFuncUnit: public Base {
 
-            static BitBoard pieces_can_move(const Board &board,
-                                            boost::mpl::false_)
-            {
-                return board.friendlies();
-            }
+        public:
+            using Base::Base;
+            using Base::board;
+            using Base::friendlies;
+            using Base::neutrals;
+            using Base::occupied;
+            using Base::pieces_can_move;
 
-            static BitBoard pieces_can_move(const Board &board,
-                                            boost::mpl::true_)
-            {
-                return board.neutrals();
-            }
-
+        private:
             template <typename Neutral>
-            static Requirement::result_type call1(const Board &board,
-                                                  SolverListIterator solvp,
-                                                  ReqT &req,
-                                                  Solution::list &result,
-                                                  Neutral neutral)
+            Requirement::result_type call1(SolverListIterator solvp,
+                                           ReqT &req,
+                                           Solution::list &result,
+                                           Neutral neutral) const
             {
                 BitBoard pieces_bb{
-                    pieces_can_move(board, neutral) & board.pieces<PT>()
+                    pieces_can_move(neutral) & board().template pieces<PT>()
                 };
                 for (Square from: pieces_bb) {
                     BitBoard moves_from{
-                        PT::instance.moves(board.colour(), from,
-                                           board.occupied()) &
-                                           ~board.friendlies()
+                        PT::instance.moves(board().colour(), from,
+                                           occupied()) &
+                                           ~friendlies()
                     };
                     for (Square to: moves_from) {
-                        Board newboard{board};
+                        Board newboard{board()};
                         MoveColour colour{newboard.colour()};
                         newboard.take_piece(from);
                         newboard.put_piece<PT>(to, neutral);
@@ -191,7 +209,7 @@ namespace blooto {
                                         Move{
                                             PT::instance,
                                             from, to,
-                                            board.occupied()[to],
+                                            occupied()[to],
                                             &*p
                                         },
                                         std::move(*slp)
@@ -211,7 +229,7 @@ namespace blooto {
                                     Move{
                                         PT::instance,
                                         from, to,
-                                        board.occupied()[to]
+                                        occupied()[to]
                                     },
                                     std::move(*slp)
                                 );
@@ -222,22 +240,21 @@ namespace blooto {
             }
 
         public:
-            static Requirement::result_type call(const Board &board,
-                                                 SolverListIterator solvp,
-                                                 ReqT &req,
-                                                 Solution::list &result)
+            Requirement::result_type operator()(SolverListIterator solvp,
+                                                ReqT &req,
+                                                Solution::list &result) const
             {
                 if (Requirement::result_type r =
-                    call1(board, solvp, req, result, boost::mpl::false_()))
+                    call1(solvp, req, result, boost::mpl::false_()))
                 {
                     return r;
                 }
                 if (Requirement::result_type r =
-                    call1(board, solvp, req, result, boost::mpl::true_()))
+                    call1(solvp, req, result, boost::mpl::true_()))
                 {
                     return r;
                 }
-                return Base::call(board, solvp, req, result);
+                return Base::operator()(solvp, req, result);
             }
         };
 
@@ -312,7 +329,7 @@ namespace blooto {
             ++solvp;
             Solution::list result;
             Requirement::result_type r{
-                SolverFunc<ReqT>::call(board, solvp, req, result)
+                SolverFunc<ReqT>(board)(solvp, req, result)
             };
             if (r)
                 return *r;

@@ -137,15 +137,31 @@ namespace blooto {
         };
 
         template <typename ReqT, typename Base, typename PT>
-        struct SolverFuncUnit: Base {
-            static Requirement::result_type call(const Board &board,
-                                                 SolverListIterator solvp,
-                                                 ReqT &req,
-                                                 Solution::list &result) {
-                BitBoard pieces_bb{board.can_move() & board.pieces<PT>()};
-                BitBoard neutrals_bb{board.neutrals()};
+        class SolverFuncUnit: public Base {
+
+            static BitBoard pieces_can_move(const Board &board,
+                                            boost::mpl::false_)
+            {
+                return board.friendlies();
+            }
+
+            static BitBoard pieces_can_move(const Board &board,
+                                            boost::mpl::true_)
+            {
+                return board.neutrals();
+            }
+
+            template <typename Neutral>
+            static Requirement::result_type call1(const Board &board,
+                                                  SolverListIterator solvp,
+                                                  ReqT &req,
+                                                  Solution::list &result,
+                                                  Neutral neutral)
+            {
+                BitBoard pieces_bb{
+                    pieces_can_move(board, neutral) & board.pieces<PT>()
+                };
                 for (Square from: pieces_bb) {
-                    bool neutral = neutrals_bb[from];
                     BitBoard moves_from{
                         PT::instance.moves(board.colour(), from,
                                            board.occupied()) &
@@ -201,6 +217,25 @@ namespace blooto {
                                 );
                         }
                     }
+                }
+                return {};
+            }
+
+        public:
+            static Requirement::result_type call(const Board &board,
+                                                 SolverListIterator solvp,
+                                                 ReqT &req,
+                                                 Solution::list &result)
+            {
+                if (Requirement::result_type r =
+                    call1(board, solvp, req, result, boost::mpl::false_()))
+                {
+                    return r;
+                }
+                if (Requirement::result_type r =
+                    call1(board, solvp, req, result, boost::mpl::true_()))
+                {
+                    return r;
                 }
                 return Base::call(board, solvp, req, result);
             }
